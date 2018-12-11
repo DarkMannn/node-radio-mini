@@ -4,6 +4,7 @@ const File = require('inert');
 const Path = require('path');
 const { streamHandler } = require('./streamLogic.js');
 
+
 const plugin = {
 
   name: 'fileServer',
@@ -16,7 +17,7 @@ const plugin = {
       method: 'GET',
       path: '/',
       handler: function(request, h) {
-        return h.file(Path.join(process.cwd(), 'index.html'));
+        return h.file(Path.join(process.cwd(), 'client/index.html'));
       }
     });
 

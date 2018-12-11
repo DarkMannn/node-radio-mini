@@ -1,21 +1,22 @@
-'use strict';
+#!usr/bin/env node
 
 const Hapi = require('hapi');
 const Static = require('./routes/index.js');
 const { startStreaming } = require('./routes/streamLogic.js');
 
+
 const server = Hapi.server({
-  port: 3050,
+  port: 8080,
   host: '192.168.8.102',
-  // compression: false
+  compression: false
 });
 
 const startApp = async () => {
-  try {  
+  try {
     await server.register(Static);
     
     startStreaming();
-    
+
     console.log(`Server running at ${server.info.uri}`);
     await server.start();
   }
@@ -26,4 +27,5 @@ const startApp = async () => {
 };
 
 
+console.log(`Cwd => ${process.cwd()}`);
 startApp();

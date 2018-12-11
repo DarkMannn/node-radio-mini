@@ -1,20 +1,18 @@
 'use strict'
 
 const Fs = require('fs');
+const { extname } = require('path');
 const { PassThrough } = require('stream');
-const Throttle = require('throttle');
+const Throttle = require('throttle-stream');
 
-const songs = [
-  Fs.createReadStream('./songs/RitaOra.mp3'),
-  Fs.createReadStream('./songs/DuaLipa.mp3'),
-  Fs.createReadStream('./songs/Camila.mp3')
-];
 const sinks = [];
-
-const throttle = new Throttle((192027 / 10) * 1.3);
-throttle.on('data', chunk => {
-  sinks.forEach(sink => sink.write(chunk));
-});
+const songs = Fs.readdirSync(process.cwd(), { withFileTypes: true })
+  .filter(dirItem => dirItem.isFile && extname(dirItem.name) === '.mp3')
+  .map(dirItem => dirItem.name)
+  .map(Fs.createReadStream)
+;
+const throttle = new Throttle({ bytes: 45000, interval: 500 });
+throttle.on('data', chunk => sinks.forEach(sink => sink.write(chunk)));
 
 
 const streamHandler = (request, h) => {
@@ -28,8 +26,9 @@ const startStreaming = () => {
 
   (function playLoop () {
     const song = songs[songNum++];
-    song.pipe(throttle, { end: false });
-    song.on('end', playLoop)
+    const hasMoreSongs = songs.length === songNum + 1;
+    song.pipe(throttle, { end: !hasMoreSongs });
+    song.on('end', hasMoreSongs ? playLoop : null)
   })();
 
 };
