@@ -1,7 +1,7 @@
 {
-  "name": "radiopro",
-  "version": "1.0.0",
-  "description": "",
+  "name": "node-radio-mini",
+  "version": "0.0.1",
+  "description": "Do it yourself internet radio made with Node.js",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,12 +9,18 @@
   "bin": {
     "radiopro": "./app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "node",
+    "radio",
+    "streaming",
+    "internet",
+    "cli"    
+  ],
+  "author": "DarkMannn",
+  "license": "MIT",
   "dependencies": {
     "hapi": "^17.8.1",
     "inert": "^5.1.2",
-    "throttle-stream": "0.0.1"
+    "throttle-stream": "0.0.x"
   }
 }

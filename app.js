@@ -1,4 +1,4 @@
-#!usr/bin/env node
+#!/usr/bin/env node
 
 const Hapi = require('hapi');
 const Static = require('./routes/index.js');
