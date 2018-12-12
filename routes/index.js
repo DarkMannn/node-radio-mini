@@ -1,7 +1,7 @@
 'use strict';
 
 const File = require('inert');
-const { streamHandler } = require('../streams/streamLogic.js');
+const { streamHandler } = require('../streaming');
 
 
 const plugin = {

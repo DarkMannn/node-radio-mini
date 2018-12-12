@@ -5,7 +5,7 @@
 const Path = require('path');
 const Hapi = require('hapi');
 const Static = require('./routes/index.js');
-const { startStreaming } = require('./streams/streamLogic.js');
+const { startStreaming } = require('./streaming');
 
 
 const server = Hapi.server({
