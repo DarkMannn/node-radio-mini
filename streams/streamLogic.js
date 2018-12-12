@@ -4,16 +4,19 @@ const Fs = require('fs');
 const { extname } = require('path');
 const { PassThrough } = require('stream');
 const Throttle = require('throttle-stream');
+const Speaker = require('speaker');
+const Lame = require('lame');
 
 const sinks = [];
 const songs = Fs.readdirSync(process.cwd(), { withFileTypes: true })
   .filter(dirItem => dirItem.isFile && extname(dirItem.name) === '.mp3')
-  .map(dirItem => dirItem.name)
-  .map(Fs.createReadStream)
+  .map(dirItem => Fs.createReadStream(dirItem.name))
 ;
 const throttle = new Throttle({ bytes: 45000, interval: 500 });
 throttle.on('data', chunk => sinks.forEach(sink => sink.write(chunk)));
-
+const decoder = new Lame.Decoder();
+decoder.pipe(new Speaker());
+sinks.push(decoder);
 
 const streamHandler = (request, h) => {
   const sink = new PassThrough();
@@ -28,7 +31,7 @@ const startStreaming = () => {
     const song = songs[songNum++];
     const hasMoreSongs = songs.length === songNum + 1;
     song.pipe(throttle, { end: !hasMoreSongs });
-    song.on('end', hasMoreSongs ? playLoop : null)
+    song.on('end', hasMoreSongs ? playLoop : () => {})
   })();
 
 };
