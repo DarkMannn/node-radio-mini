@@ -9,6 +9,14 @@
   "bin": {
     "radiopro": "./app.js"
   },
+  "dependencies": {
+    "hapi": "^17.8.1",
+    "inert": "^5.1.2",
+    "lame": "^1.2.4",
+    "neo-blessed": "^0.2.0",
+    "speaker": "^0.4.1",
+    "throttle-stream": "^0.0.7"
+  },
   "keywords": [
     "node",
     "radio",
@@ -18,11 +26,7 @@
   ],
   "author": "DarkMannn",
   "license": "MIT",
-  "dependencies": {
-    "hapi": "^17.8.1",
-    "inert": "^5.1.2",
-    "lame": "^1.2.4",
-    "speaker": "^0.4.1",
-    "throttle-stream": "^0.0.7"
+  "devDependencies": {
+    "eslint": "^5.10.0"
   }
 }
