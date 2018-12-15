@@ -1,5 +1,7 @@
+'use strict';
+
 const { startStreaming } = require('./streaming');
-const { renderAndReturnWindows, renderSongs, render } = require('./views');
+const { renderAndReturnWindows, renderSongs, renderRadio } = require('./views');
 
 
 exports.startEngine = () => {
@@ -7,5 +9,5 @@ exports.startEngine = () => {
     startStreaming();
     const { playlist, queue, terminal } = renderAndReturnWindows();
     renderSongs(playlist, queue);
-    render();
+    renderRadio();
 };

@@ -4,7 +4,7 @@
 
 const Path = require('path');
 const Hapi = require('hapi');
-const Static = require('./routes/index.js');
+const StreamRoutes = require('./routes');
 const { startEngine } = require('./engine.js');
 
 
@@ -22,7 +22,7 @@ const server = Hapi.server({
 const startApp = async () => {
 
     try {
-        await server.register(Static);
+        await server.register(StreamRoutes);
         startEngine();
 
         console.log(`Server running at ${server.info.uri}`);
