@@ -2,7 +2,38 @@
 
 const NeoBlessed = require('neo-blessed');
 
+const __ = {};
 const exp = {};
+
+__.childConfig = {
+    width: '100%',
+    height: 1,
+    left: 0
+};
+__.playlistChildColors = {
+    fg: 'cyan',
+    bg: 'grey',
+    focus: {
+        fg: 'grey',
+        bg: 'cyan'
+    }
+};
+__.queueChildColors = {
+    fg: 'white',
+    bg: 'blue',
+    focus: {
+        fg: 'blue',
+        bg: 'white'
+    }
+};
+__.terminalChildColors = {
+    fg: 'white',
+    bg: 'black',
+    focus: {
+        fg: 'black',
+        bg: 'white'
+    }
+};
 exp.screen = NeoBlessed.screen({ smartSCR: true });    
 exp.screen.title = 'Node Radio Mini';
 exp.screen.key(['escape', 'q', 'C-c'], (ch, key) => process.exit(0));
@@ -64,23 +95,9 @@ exp.terminal = NeoBlessed.box({
     }
 });
 
-exp.playlistChildColors = {
-    fg: 'cyan',
-    bg: 'grey',
-    focus: {
-        fg: 'grey',
-        bg: 'cyan'
-    }
-};
-
-exp.queueChildColors = {
-    fg: 'white',
-    bg: 'blue',
-    focus: {
-        fg: 'blue',
-        bg: 'white'
-    }
-};
+exp.playlistChildConfig = { ...__.childConfig, ...__.playlistChildColors };
+exp.playlistQueueConfig = { ...__.childConfig, ...__.playlistQueueColors };
+exp.playlistTerminalConfig = { ...__.childConfig, ...__.playlistTerminalColors };
 
 
 module.exports = exp;

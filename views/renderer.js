@@ -6,8 +6,9 @@ const {
     playlist,
     queue,
     terminal,
-    playlistChildColors,
-    queueChildColors
+    playlistChildConfig,
+    queueChildConfig,
+    terminalChildConfig
 } = require('./screens-config');
 const Utils = require('../utils');
 
@@ -18,21 +19,28 @@ const exp = {};
 __.setLibAndParentForAppendingFunction = Lib =>
     parent =>
         config => parent.append(Lib.box(config));
-__.setParentToAppendTo = __.setLibAndParentForAppendingFunction(NeoBlessed);
-__.appendToPlaylist = __.setParentToAppendTo(playlist);
-__.setStyleForChildFactory = style =>
+__.setLibAndParentForDiscardingFunction = Lib =>
+    parent => parent.remove(parent.children[0]);
+
+__.setParentForAppendingFunction = __.setLibAndParentForAppendingFunction(NeoBlessed);
+__.setParentForDiscardingFunction = __.setLibAndParentForDiscardingFunction(NeoBlessed);
+
+__.appendToPlaylist = __.setParentForAppendingFunction(playlist);
+__.appendToQueue = __.setParentForAppendingFunction(queue);
+__.appendToTerminal = __.setParentForAppendingFunction(terminal);
+
+__.discardFromQueue = __.setParentForDiscardingFunction(queue);
+
+__.setStyleForChildFactory = (config, prefix) =>
     (content, position) => ({
-        width: '100%',
-        height: 1,
-        left: 0,
-        top: position * 1,
-        content,
-        style
+        ...config,
+        top: position,
+        content: prefix || position + content
     });
 
-__.createPlaylistChild = __.setStyleForChildFactory(playlistChildColors);
-
-__.createQueueChild = __.setStyleForChildFactory(queueChildColors);
+__.createPlaylistChild = __.setStyleForChildFactory(playlistChildConfig, '- ');
+__.createQueueChild = __.setStyleForChildFactory(queueChildConfig);
+__.createTerminalChild = __.setStyleForChildFactory(terminalChildConfig, '> ');
 
 __.createChildAndAppendToPlaylist = Utils.pipe(
     __.createPlaylistChild,
@@ -51,6 +59,11 @@ exp.renderAndReturnWindows = () => {
 };
 
 exp.fillPlaylist = songs => songs.forEach(__.createChildAndAppendToPlaylist);
+
+exp.appendToQueue = __.appendToQueue;
+exp.discardFromQueue = __.discardFromQueue;
+
+exp.appendToTerminal = __.appendToTerminal;
 
 exp.render = screen.render.bind(screen);
 
