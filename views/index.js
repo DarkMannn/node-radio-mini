@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
-    ...require('./player'),
-    ...require('./song-reader')
+    ...require('./renderer.js'),
+    ...require('./song-reader'),
+    ...require('./screens-config')
 };

@@ -6,20 +6,22 @@ const Throttle = require('throttle-stream');
 const { hostSink } = require('./host-sink.js');
 const { readSongs } = require('../views');
 
+const exp = {};
+
 const sinks = [hostSink()];
-const songs = readSongs().map(song => Fs.createReadStream(song));
 const throttle = new Throttle({ bytes: 45000, interval: 500 });
 throttle.on('data', chunk => sinks.forEach(sink => sink.write(chunk)));
 
+exp.getSongReadStreams = () => readSongs().map(song => Fs.createReadStream(song));
 
-exports.createStream = () => {
+exp.createStream = () => {
 
     const sink = new PassThrough();
     sinks.push(sink);
     return sink;
 };
 
-exports.startStreaming = () => {
+exp.startStreaming = (songs) => {
 
     let songNum = 0;
 
@@ -33,3 +35,4 @@ exports.startStreaming = () => {
 
 };
 
+module.exports = exp;

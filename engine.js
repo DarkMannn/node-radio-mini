@@ -1,13 +1,13 @@
 'use strict';
 
-const { startStreaming } = require('./streaming');
-const { renderAndReturnWindows, renderSongs, renderRadio } = require('./views');
+const Stream = require('./streams');
+const View = require('./views');
 
 
 exports.startEngine = () => {
 
-    startStreaming();
-    const { playlist, queue, terminal } = renderAndReturnWindows();
-    renderSongs(playlist, queue);
-    renderRadio();
+    Stream.startStreaming(Stream.getSongReadStreams());
+    const { playlist, queue, terminal } = View.renderAndReturnWindows();
+    View.fillPlaylist(View.readSongs());
+    View.render();
 };

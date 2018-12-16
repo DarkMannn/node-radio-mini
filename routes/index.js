@@ -1,7 +1,7 @@
 'use strict';
 
 const File = require('inert');
-const { createStream } = require('../streaming');
+const { createStream } = require('../streams');
 
 
 const plugin = {
