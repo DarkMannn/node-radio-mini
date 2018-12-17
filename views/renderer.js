@@ -8,7 +8,11 @@ const {
     logger,
     playlistChildConfig,
     queueChildConfig,
-    loggerChildConfig
+    loggerChildConfig,
+    bgPlFocus,
+    bgPlPlain,
+    bgQuFocus,
+    bgQuPlain
 } = require('./screens-config');
 const Utils = require('../utils');
 
@@ -21,7 +25,7 @@ __.setLibAndParentForAppendingFunction = Lib =>
         config => parent.append(Lib.box(config));
 __.setLibAndParentForDiscardingFunction = Lib =>
     parent =>
-        () => parent.remove(parent.children[1]);
+        (index) => parent.remove(parent.children[index]);
 
 __.setParentForAppendingFunction = __.setLibAndParentForAppendingFunction(NeoBlessed);
 __.setParentForDiscardingFunction = __.setLibAndParentForDiscardingFunction(NeoBlessed);
@@ -32,49 +36,56 @@ __.appendToLogger = __.setParentForAppendingFunction(logger);
 
 __.discardFromQueue = __.setParentForDiscardingFunction(queue);
 
-__.setStyleForChildFactory = (config, prefix) =>
-    (content, position) => ({
+__.createChildInit = (parent, config, prefix) =>
+    content => ({
         ...config,
-        top: position,
-        content: (prefix || position + '. ') + content
+        top: parent.children.length - 1,
+        content: (prefix || parent.children.length + '. ') + content
     });
 
-__.createPlaylistChild = __.setStyleForChildFactory(playlistChildConfig, '- ');
-__.createQueueChild = __.setStyleForChildFactory(queueChildConfig);
-__.createLoggerChild = __.setStyleForChildFactory(loggerChildConfig, '> ');
+__.createPlaylistChild = __.createChildInit(playlist, playlistChildConfig, '- ');
+__.createQueueChild = __.createChildInit(queue, queueChildConfig);
+__.createLoggerChild = __.createChildInit(logger, loggerChildConfig, '> ');
 
-__.createKeyListenerInit = parent =>
+__.createKeyListenerInit = (parent, actionFn, bgPlain, bgFocus) =>
     () => {
 
-        let indexPlaylist = 1;
-        let limit = parent.children.length - 1;
-        let indexQueue = 0;
+        const getLimit = () => parent.children.length - 1;
+        let focusIndex = 1;
 
-        const playlistNavigator = key => {
+        const navigator = key => {
 
-            switch (key) {
-            case 'k':
-                indexPlaylist && indexPlaylist--;
-                exp.createChildAndAppendToLogger(parent.children[indexPlaylist].content, 0),
-                exp.render();
-                break;
-            case 'l':
-                (indexPlaylist < limit) && indexPlaylist++;
-                exp.createChildAndAppendToLogger(parent.children[indexPlaylist].content, 0),
-                exp.render();
-                break;
-            }
+            parent.children[focusIndex].style.bg = bgPlain;
+
+            if (key === 'k' && focusIndex > 1) focusIndex--;
+            else if (key === 'l' && focusIndex < getLimit()) focusIndex++;
+
+            parent.children[focusIndex].style.bg = bgFocus;
+            exp.log(parent.children[focusIndex].content),
+            exp.render();
         };
-        const playlistEnqueuer = () => {
+        const action = () => {
     
-            exp.createChildAndAppendToQueue(parent.children[indexPlaylist].content, indexQueue++);
+            actionFn(parent.children[focusIndex].content, focusIndex);
             exp.render();
         };
 
-        return { playlistNavigator, playlistEnqueuer };
+        return { navigator, action };
     }; 
 
-exp.createPlaylistKeyListeners = __.createKeyListenerInit(playlist);
+exp.createPlaylistKeyListeners = __.createKeyListenerInit(
+    playlist,
+    item => exp.createChildAndAppendToQueue(item.substring(item.indexOf(' ') + 1)),
+    bgPlPlain,
+    bgPlFocus
+);
+
+exp.createQueueKeyListeners = __.createKeyListenerInit(
+    queue,
+    (content, index) => __.discardFromQueue(index),
+    bgQuPlain,
+    bgQuFocus
+);
 
 exp.createChildAndAppendToPlaylist = Utils.pipe(
     __.createPlaylistChild,
@@ -88,6 +99,11 @@ exp.createChildAndAppendToLogger = Utils.pipe(
     __.createLoggerChild,
     __.appendToLogger
 );
+
+exp.log = (function initLogger() {
+    let indexLogger = 0;
+    return content => exp.createChildAndAppendToLogger(content, indexLogger++ % 6); // Temporary
+})();
 
 exp.renderAndReturnWindows = () => {
 
@@ -108,5 +124,6 @@ exp.discardFromQueue = __.discardFromQueue;
 exp.appendToLogger = __.appendToLogger;
 
 exp.render = screen.render.bind(screen);
+
 
 module.exports = exp;

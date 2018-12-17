@@ -22,9 +22,15 @@ __.loggerChildColors = {
     fg: 'white',
     bg: 'black'
 };
+
+exp.bgPlFocus = 'black';
+exp.bgPlPlain = 'grey';
+exp.bgQuFocus = 'black';
+exp.bgQuPlain = 'blue';
+
 exp.screen = NeoBlessed.screen({ smartSCR: true });    
 exp.screen.title = 'Node Radio Mini';
-exp.screen.key(['escape', 'q', 'C-c'], (ch, key) => process.exit(0));
+exp.screen.key(['escape', 'C-c'], (ch, key) => process.exit(0));
 
 exp.playlist = NeoBlessed.box({
     top: 0,
@@ -64,12 +70,13 @@ exp.queue = NeoBlessed.box({
     }
 });
 
-exp.logger = NeoBlessed.box({
+exp.logger = NeoBlessed.log({
     top: '70%',
     left: '50%',
     width: '50%',
     height: '32%',
     scrollable: true,
+    scrollOnInput: true,
     label: 'Console',
     border: {
         type: 'line'
