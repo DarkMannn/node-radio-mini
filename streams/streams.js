@@ -5,31 +5,35 @@ const { PassThrough } = require('stream');
 const Throttle = require('throttle-stream');
 const { hostSink } = require('./host-sink.js');
 const { readSongs } = require('../views');
+const { only1 } = require('../utils');
 
+const __ = {};
 const exp = {};
 
-const sinks = [hostSink()];
-const throttle = new Throttle({ bytes: 45000, interval: 500 });
-throttle.on('data', chunk => sinks.forEach(sink => sink.write(chunk)));
+__.sinks = [hostSink()];
+__.songs = [];
+__.throttle = new Throttle({ bytes: 45000, interval: 500 })
+    .on('data', chunk => __.sinks.forEach(sink => sink.write(chunk)));
 
-exp.getSongReadStreams = () => readSongs().map(song => Fs.createReadStream(song));
+exp.loadSongReadStreams = () => __.songs.push(...readSongs().map(only1(Fs.createReadStream)));
 
 exp.createStream = () => {
 
     const sink = new PassThrough();
-    sinks.push(sink);
+    __.sinks.push(sink);
+
     return sink;
 };
 
-exp.startStreaming = (songs) => {
+exp.startStreaming = () => {
 
     let songNum = 0;
 
     (function playLoop () {
 
-        const song = songs[songNum++];
-        const hasMoreSongs = songs.length === songNum + 1;
-        song.pipe(throttle, { end: !hasMoreSongs });
+        const song = __.songs[songNum++];
+        const hasMoreSongs = __.songs.length === songNum + 1;
+        song.pipe(__.throttle, { end: !hasMoreSongs });
         song.on('end', hasMoreSongs ? playLoop : () => {});
     })();
 

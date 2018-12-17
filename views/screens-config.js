@@ -12,27 +12,15 @@ __.childConfig = {
 };
 __.playlistChildColors = {
     fg: 'cyan',
-    bg: 'grey',
-    focus: {
-        fg: 'grey',
-        bg: 'cyan'
-    }
+    bg: 'grey'
 };
 __.queueChildColors = {
     fg: 'white',
-    bg: 'blue',
-    focus: {
-        fg: 'blue',
-        bg: 'white'
-    }
+    bg: 'blue'
 };
-__.terminalChildColors = {
+__.loggerChildColors = {
     fg: 'white',
-    bg: 'black',
-    focus: {
-        fg: 'black',
-        bg: 'white'
-    }
+    bg: 'black'
 };
 exp.screen = NeoBlessed.screen({ smartSCR: true });    
 exp.screen.title = 'Node Radio Mini';
@@ -43,8 +31,8 @@ exp.playlist = NeoBlessed.box({
     left: 0,
     width: '50%',
     height: '100%',
-    label: 'Playlist',
     scrollable: true,
+    label: 'Playlist',
     border: {
         type: 'line'
     },
@@ -62,8 +50,8 @@ exp.queue = NeoBlessed.box({
     left: '50%',
     width: '50%',
     height: '70%',
-    label: 'To be played',
     scrollable: true,
+    label: 'Queue',
     border: {
         type: 'line'
     },
@@ -76,13 +64,13 @@ exp.queue = NeoBlessed.box({
     }
 });
 
-exp.terminal = NeoBlessed.box({
+exp.logger = NeoBlessed.box({
     top: '70%',
     left: '50%',
     width: '50%',
     height: '32%',
-    label: 'Console',
     scrollable: true,
+    label: 'Console',
     border: {
         type: 'line'
     },
@@ -96,8 +84,8 @@ exp.terminal = NeoBlessed.box({
 });
 
 exp.playlistChildConfig = { ...__.childConfig, ...__.playlistChildColors };
-exp.playlistQueueConfig = { ...__.childConfig, ...__.playlistQueueColors };
-exp.playlistTerminalConfig = { ...__.childConfig, ...__.playlistTerminalColors };
+exp.queueChildConfig = { ...__.childConfig, ...__.queueChildColors };
+exp.loggerChildConfig = { ...__.childConfig, ...__.loggerChildColors };
 
 
 module.exports = exp;
