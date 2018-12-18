@@ -14,22 +14,43 @@ exports.startEngine = () => {
 
     const {
         navigator: playlistNavigator,
-        action: playlistAction
+        action: playlistAction,
+        preFocus: playlistPre,
+        postFocus: playlistPost
     } = View.createPlaylistKeyListeners();
     const {
         navigator: queueNavigator,
-        action: queueAction
+        action: queueAction,
+        preFocus: queuePre,
+        postFocus: queuePost,
+        changeOrder
     } = View.createQueueKeyListeners();
 
-    // playlist.on('keypress', playlistNavigator);
+    playlist.key('j', playlistNavigator);
     playlist.key('k', playlistNavigator);
-    playlist.key('l', playlistNavigator);
     playlist.key('enter', playlistAction);
+    queue.key('j', queueNavigator);
     queue.key('k', queueNavigator);
-    queue.key('l', queueNavigator);
-    queue.key('d', queueAction);
-    queue.key('p', playlist.focus.bind(playlist));
-    playlist.key('q', queue.focus.bind(queue));
+    queue.key('h', changeOrder);
+    queue.key('l', changeOrder);
+    queue.key('d', () => {
+        queueAction();
+        queuePre();
+        View.render();
+    });
+    queue.key('p', () => {
+        queuePost();
+        playlistPre();
+        playlist.focus();
+        View.render();
+    });
+    playlist.key('q', () => {
+        playlistPost();
+        queuePre();
+        queue.focus();
+        View.render();
+    });
+    playlistPre();
     playlist.focus();
     View.render();
 };

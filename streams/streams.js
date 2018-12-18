@@ -5,7 +5,7 @@ const { PassThrough } = require('stream');
 const Throttle = require('throttle-stream');
 const { hostSink } = require('./host-sink.js');
 const { readSongs } = require('../views');
-const { only1 } = require('../utils');
+const { unary } = require('../utils');
 
 const __ = {};
 const exp = {};
@@ -15,7 +15,7 @@ __.songs = [];
 __.throttle = new Throttle({ bytes: 45000, interval: 500 })
     .on('data', chunk => __.sinks.forEach(sink => sink.write(chunk)));
 
-exp.loadSongReadStreams = () => __.songs.push(...readSongs().map(only1(Fs.createReadStream)));
+exp.loadSongReadStreams = () => __.songs.push(...readSongs().map(unary(Fs.createReadStream)));
 
 exp.createStream = () => {
 
