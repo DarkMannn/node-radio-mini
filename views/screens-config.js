@@ -18,10 +18,16 @@ __.queueChildColors = {
     fg: 'white',
     bg: 'blue'
 };
-__.loggerChildColors = {
-    fg: 'white',
+__.playingChildColors = {
+    fg: 'green',
     bg: 'black'
 };
+
+exp.controlsPlaylist = '  q  -  focus queue  |  k - go up\n' +
+    'enter - enqueue song |  l - go down\n';
+exp.controlsQueue = 'p - focus playlist | k - go up\n' +
+    'd -  dequeue song  | l - go down\n' +
+    'a,z - move song up or down the queue';
 
 exp.bgPlFocus = 'black';
 exp.bgPlPlain = 'grey';
@@ -70,14 +76,12 @@ exp.queue = NeoBlessed.box({
     }
 });
 
-exp.logger = NeoBlessed.log({
+exp.playing = NeoBlessed.box({
     top: '70%',
     left: '50%',
     width: '50%',
-    height: '32%',
-    scrollable: true,
-    scrollOnInput: true,
-    label: 'Console',
+    height: 3,
+    label: 'Now Playing',
     border: {
         type: 'line'
     },
@@ -90,9 +94,29 @@ exp.logger = NeoBlessed.log({
     }
 });
 
+exp.controls = NeoBlessed.box({
+    top: '85%',
+    left: '50%',
+    width: '50%',
+    height: 5,
+    scrollable: true,
+    label: 'Controls',
+    content: exp.controlsQueue,
+    border: {
+        type: 'line'
+    },
+    style: {
+        fg: 'grey',
+        bg: 'black',
+        border: {
+            fg: '#000000'
+        }
+    }
+});
+
 exp.playlistChildConfig = { ...__.childConfig, ...__.playlistChildColors };
 exp.queueChildConfig = { ...__.childConfig, ...__.queueChildColors };
-exp.loggerChildConfig = { ...__.childConfig, ...__.loggerChildColors };
+exp.playingChildConfig = { ...__.childConfig, ...__.playingChildColors };
 
 
 module.exports = exp;
