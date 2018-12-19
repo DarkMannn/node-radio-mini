@@ -2,23 +2,20 @@
 
 const Stream = require('./streams');
 const View = require('./views');
+const Ut = require('./utils');
 
-
-exports.startEngine = () => {
-    Stream.loadSongReadStreams();
-    Stream.startStreaming();
+function renderView() {
 
     const { playlist, queue, controls } = View.renderAndReturnWindows();
-    View.fillPlaylist(View.readSongs());
+    View.fillPlaylist(Ut.readSongs());
     View.render();
-
+    
     const {
         navigator: playlistNavigator,
         action: playlistAction,
         preFocus: playlistPre,
         postFocus: playlistPost
     } = View.createPlaylistKeyListeners();
-
     const {
         navigator: queueNavigator,
         action: queueAction,
@@ -26,7 +23,7 @@ exports.startEngine = () => {
         postFocus: queuePost,
         changeOrder
     } = View.createQueueKeyListeners();
-
+    
     playlist.key('k', playlistNavigator);
     playlist.key('l', playlistNavigator);
     playlist.key('enter', playlistAction);
@@ -58,4 +55,14 @@ exports.startEngine = () => {
     playlistPre();
     playlist.focus();
     View.render();
+}
+
+function startStreaming() {
+    Stream.startStreaming(Ut.readSong());
+}
+
+exports.startEngine = function startEngine() {
+    
+    renderView();
+    startStreaming();
 };

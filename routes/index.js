@@ -1,7 +1,7 @@
 'use strict';
 
 const File = require('inert');
-const { createStream } = require('../streams');
+const { makeResponseStream } = require('../streams');
 
 
 const plugin = {
@@ -21,7 +21,8 @@ const plugin = {
         server.route({
             method: 'GET',
             path: '/stream',
-            handler: (req, h) => h.response(createStream()).type('audio/mpeg')
+            handler: (req, h) =>
+                h.response(makeResponseStream()).type('audio/mpeg')
         });
 
     }

@@ -17,7 +17,7 @@ const {
     controlsPlaylist,
     controlsQueue
 } = require('./screens-config');
-const Utils = require('../utils');
+const Ut = require('../utils');
 
 const __ = {};
 const exp = {};
@@ -48,7 +48,7 @@ __.discardFromQueue = __.setParentForDiscardingFunction(queue);
 
 __.orderQueue = __.setParentForOrderingFunction(
     queue,
-    (content, index) => `${index}. ${Utils.noFirstWord(content)}`
+    (content, index) => `${index}. ${Ut.noFirstWord(content)}`
 );
 
 __.createChildInit = (parent, config, prefix, single = false) =>
@@ -103,8 +103,8 @@ __.createKeyListenerInit = (parent, actionFn, bgPlain, bgFocus) =>
             child1.style.bg = bgPlain;
             child2.style.bg = bgFocus;
             [child1.content, child2.content] = [
-                `${Utils.firstWord(child1.content)} ${Utils.noFirstWord(child2.content)}`,
-                `${Utils.firstWord(child2.content)} ${Utils.noFirstWord(child1.content)}`,
+                `${Ut.firstWord(child1.content)} ${Ut.noFirstWord(child2.content)}`,
+                `${Ut.firstWord(child2.content)} ${Ut.noFirstWord(child1.content)}`,
             ];
 
             exp.render();
@@ -119,22 +119,22 @@ __.createKeyListenerInit = (parent, actionFn, bgPlain, bgFocus) =>
         };
     };
 
-exp.createChildAndAppendToPlaylist = Utils.pipe(
+exp.createChildAndAppendToPlaylist = Ut.pipe(
     __.createPlaylistChild,
     __.appendToPlaylist
 );
-exp.createChildAndAppendToQueue = Utils.pipe(
+exp.createChildAndAppendToQueue = Ut.pipe(
     __.createQueueChild,
     __.appendToQueue
 );
-exp.createChildAndAppendToPlaying = Utils.pipe(
+exp.createChildAndAppendToPlaying = Ut.pipe(
     __.createPlayingChild,
     __.appendToPlaying
 );
 
 exp.createPlaylistKeyListeners = __.createKeyListenerInit(
     playlist,
-    Utils.pipe(Utils.noFirstWord, exp.createChildAndAppendToQueue),
+    Ut.pipe(Ut.noFirstWord, exp.createChildAndAppendToQueue),
     bgPlPlain,
     bgPlFocus
 );

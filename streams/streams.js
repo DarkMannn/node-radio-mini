@@ -1,23 +1,23 @@
 'use strict';
 
 const Fs = require('fs');
-const { PassThrough } = require('stream');
 const Throttle = require('throttle-stream');
-const { hostSink } = require('./host-sink.js');
-const { readSongs } = require('../views');
-const { unary } = require('../utils');
+const { PassThrough } = require('stream');
+const { makeHostSink } = require('./host-sink.js');
+const Ut = require('../utils');
 
 const __ = {};
 const exp = {};
 
-__.sinks = [hostSink()];
+
+__.sinks = [makeHostSink()];
 __.songs = [];
-__.throttle = new Throttle({ bytes: 45000, interval: 500 })
-    .on('data', chunk => __.sinks.forEach(sink => sink.write(chunk)));
 
-exp.loadSongReadStreams = () => __.songs.push(...readSongs().map(unary(Fs.createReadStream)));
+__.haveMoreSongs = () => __.songs.length;
+__.onData = chunk => chunk && __.sinks.forEach(sink => sink.write(chunk));
+__.makeThrottle = (bytes) => new Throttle({ bytes, interval: 1000 }).on('data', __.onData);
 
-exp.createStream = () => {
+exp.makeResponseStream = function makeResponseStream() {
 
     const sink = new PassThrough();
     __.sinks.push(sink);
@@ -25,18 +25,23 @@ exp.createStream = () => {
     return sink;
 };
 
-exp.startStreaming = () => {
+exp.startStreaming = function startStreaming(firstSong){
 
-    let songNum = 0;
+    __.songs.push(firstSong);
 
-    (function playLoop () {
+    (function playLoop() {
 
-        const song = __.songs[songNum++];
-        const hasMoreSongs = __.songs.length === songNum + 1;
-        song.pipe(__.throttle, { end: !hasMoreSongs });
-        song.on('end', hasMoreSongs ? playLoop : () => {});
+        const song = __.songs.pop();
+        // ucitaj speed
+        (function repeatLoop() {
+
+            const songReadStream = Fs.createReadStream(song);
+            songReadStream.pipe(__.makeThrottle(45000));
+            songReadStream.on('end', __.haveMoreSongs() ? playLoop : repeatLoop); // mozda se evaluira odmah?
+        })();
     })();
 
 };
+
 
 module.exports = exp;
