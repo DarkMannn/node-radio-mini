@@ -10,13 +10,13 @@ function renderView() {
 
     const {
         navigator: playlistNavigator,
-        action: playlistAction,
+        action: sendToQueueWindow,
         preFocus: playlistPre,
         postFocus: playlistPost
     } = View.createPlaylistKeyListeners();
     const {
         navigator: queueNavigator,
-        action: queueAction,
+        action: removeFromQueueWindow,
         preFocus: queuePre,
         postFocus: queuePost,
         changeOrder
@@ -24,7 +24,7 @@ function renderView() {
 
     playlist.key('k', playlistNavigator);
     playlist.key('l', playlistNavigator);
-    playlist.key('enter', playlistAction);
+    playlist.key('enter', sendToQueueWindow);
     playlist.key('q', () => {
 
         playlistPost();
@@ -40,7 +40,7 @@ function renderView() {
     queue.key('z', changeOrder);
     queue.key('d', () => {
 
-        queueAction();
+        removeFromQueueWindow();
         queuePre();
         View.render();
     });

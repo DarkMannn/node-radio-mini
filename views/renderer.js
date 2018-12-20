@@ -84,16 +84,24 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
 
             parent.children[focusIndex.get()].style.bg = bgPlain;
 
-            if (key === 'k' && focusIndex.get() > 1) focusIndex.decr();
-            else if (key === 'l' && focusIndex.get() < getLimit()) focusIndex.incr();
+            if (key === 'k' && focusIndex.get() > 1) {
+                focusIndex.decr();
+            }
+            else if (key === 'l' && focusIndex.get() < getLimit()) {
+                focusIndex.incr();
+            }
 
             parent.children[focusIndex.get()].style.bg = bgFocus;
             exp.createChildAndAppendToPlaying(parent.children[focusIndex.get()].content),
             exp.render();
         };
         const action = () => {
-    
-            actionFn(parent.children[focusIndex.get()].content, focusIndex);
+
+            const child = parent.children[focusIndex.get()];
+            const content = child && child.content; 
+            if (content) {
+                actionFn(content, focusIndex);
+            }
             exp.render();
         };
         const preFocus = () => {
@@ -110,12 +118,18 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
         };
         const changeOrder = key => {
 
-            if (parent.children.length === 1) return;
+            if (parent.children.length === 1) {
+                return;
+            }
 
             const child1 = parent.children[focusIndex.get()];
             
-            if (key === 'a' && focusIndex.get() > 1) focusIndex.decr();
-            else if (key === 'z' && focusIndex.get() < getLimit()) focusIndex.incr();
+            if (key === 'a' && focusIndex.get() > 1) {
+                focusIndex.decr();
+            }
+            else if (key === 'z' && focusIndex.get() < getLimit()) {
+                focusIndex.incr();
+            }
             
             const child2 = parent.children[focusIndex.get()];
 
