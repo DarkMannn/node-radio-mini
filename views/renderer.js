@@ -1,6 +1,7 @@
 'use strict';
 
 const NeoBlessed = require('neo-blessed');
+const Ut = require('../utils');
 const {
     screen,
     playlist,
@@ -17,28 +18,21 @@ const {
     controlsPlaylist,
     controlsQueue
 } = require('./screens-config');
-const Ut = require('../utils');
 
 const __ = {};
 const exp = {};
 
-__.setLibAndParentForAppendingFunction = Lib =>
-    parent =>
-        config => parent.append(Lib.box(config));
-__.setLibAndParentForDiscardingFunction = Lib =>
-    parent =>
-        (index) => parent.remove(parent.children[index]);
-__.setLibAndParentForOrderingFunction = Lib =>
-    (parent, contentFn) =>
-        () => parent.children.forEach((child, index) => {
-            if (index === 0) return;
-            child.top = index - 1;
-            child.content = contentFn(child.content, index);
-        });
 
-__.setParentForAppendingFunction = __.setLibAndParentForAppendingFunction(NeoBlessed);
-__.setParentForDiscardingFunction = __.setLibAndParentForDiscardingFunction(NeoBlessed);
-__.setParentForOrderingFunction = __.setLibAndParentForOrderingFunction(NeoBlessed);
+__.setParentForAppendingFunction = parent =>
+    config => parent.append(NeoBlessed.box(config));
+__.setParentForDiscardingFunction = parent =>
+    index => parent.remove(parent.children[index]);
+__.setParentForOrderingFunction = (parent, updateContentFn) =>
+    () => parent.children.forEach((child, index) => {
+        if (index === 0) return;
+        child.top = index - 1;
+        child.content = updateContentFn(child.content, index);
+    });
 
 __.appendToPlaylist = __.setParentForAppendingFunction(playlist);
 __.appendToQueue = __.setParentForAppendingFunction(queue);
@@ -51,55 +45,80 @@ __.orderQueue = __.setParentForOrderingFunction(
     (content, index) => `${index}. ${Ut.noFirstWord(content)}`
 );
 
-__.createChildInit = (parent, config, prefix, single = false) =>
+__.createChildInit = ({ parent, config, prefix, single = false }) =>
     content => ({
         ...config,
         top: single ? 0 : parent.children.length - 1,
         content: (prefix || parent.children.length + '. ') + content
     });
 
-__.createPlaylistChild = __.createChildInit(playlist, playlistChildConfig, '- ');
-__.createQueueChild = __.createChildInit(queue, queueChildConfig);
-__.createPlayingChild = __.createChildInit(playing, playingChildConfig, '>>> ', true);
+__.createPlaylistChild = __.createChildInit({
+    parent: playlist,
+    config: playlistChildConfig,
+    prefix: '- '
+});
+__.createQueueChild = __.createChildInit({ parent: queue, config: queueChildConfig });
+__.createPlayingChild = __.createChildInit({
+    parent: playing,
+    config: playingChildConfig,
+    prefix: '>>> ',
+    single: true
+});
 
-__.createKeyListenerInit = (parent, actionFn, bgPlain, bgFocus) =>
-    () => {
+__.fillPlaylist = songs => songs.forEach(exp.createChildAndAppendToPlaylist);
+
+__.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
+    function keyListener() {
 
         const getLimit = () => parent.children.length - 1;
-        let focusIndex = 1;
+        const focusIndex = {
+            index: 1,
+            get: () => focusIndex.index,
+            incr: () => ++focusIndex.index,
+            decr: () => --focusIndex.index
+        };
 
         const navigator = key => {
 
             if (parent.children.length === 1) return;
 
-            parent.children[focusIndex].style.bg = bgPlain;
+            parent.children[focusIndex.get()].style.bg = bgPlain;
 
-            if (key === 'k' && focusIndex > 1) focusIndex--;
-            else if (key === 'l' && focusIndex < getLimit()) focusIndex++;
+            if (key === 'k' && focusIndex.get() > 1) focusIndex.decr();
+            else if (key === 'l' && focusIndex.get() < getLimit()) focusIndex.incr();
 
-            parent.children[focusIndex].style.bg = bgFocus;
-            exp.createChildAndAppendToPlaying(parent.children[focusIndex].content),
+            parent.children[focusIndex.get()].style.bg = bgFocus;
+            exp.createChildAndAppendToPlaying(parent.children[focusIndex.get()].content),
             exp.render();
         };
         const action = () => {
     
-            actionFn(parent.children[focusIndex].content, focusIndex);
+            actionFn(parent.children[focusIndex.get()].content, focusIndex);
             exp.render();
         };
-        const preFocus = () => focusIndex > 0 && parent.children[focusIndex] &&
-            (parent.children[focusIndex].style.bg = bgFocus);
-        const postFocus = () => parent.children[focusIndex] &&
-            (parent.children[focusIndex].style.bg = bgPlain);
+        const preFocus = () => {
+
+            if (focusIndex.get() > 0 && parent.children[focusIndex.get()]) {
+                parent.children[focusIndex.get()].style.bg = bgFocus;
+            }
+        };
+        const postFocus = () => {
+
+            if (parent.children[focusIndex.get()]) {
+                (parent.children[focusIndex.get()].style.bg = bgPlain);
+            }
+        };
         const changeOrder = key => {
 
             if (parent.children.length === 1) return;
 
-            const child1 = parent.children[focusIndex];
+            const child1 = parent.children[focusIndex.get()];
             
-            if (key === 'a' && focusIndex > 1) focusIndex--;
-            else if (key === 'z' && focusIndex < getLimit()) focusIndex++;
+            if (key === 'a' && focusIndex.get() > 1) focusIndex.decr();
+            else if (key === 'z' && focusIndex.get() < getLimit()) focusIndex.incr();
             
-            const child2 = parent.children[focusIndex];
+            const child2 = parent.children[focusIndex.get()];
+
             child1.style.bg = bgPlain;
             child2.style.bg = bgFocus;
             [child1.content, child2.content] = [
@@ -115,7 +134,7 @@ __.createKeyListenerInit = (parent, actionFn, bgPlain, bgFocus) =>
             action,
             preFocus,
             postFocus,
-            ...parent === queue && { changeOrder }
+            ...(parent === queue && { changeOrder })
         };
     };
 
@@ -132,33 +151,44 @@ exp.createChildAndAppendToPlaying = Ut.pipe(
     __.appendToPlaying
 );
 
-exp.createPlaylistKeyListeners = __.createKeyListenerInit(
-    playlist,
-    Ut.pipe(Ut.noFirstWord, exp.createChildAndAppendToQueue),
-    bgPlPlain,
-    bgPlFocus
-);
+exp.createPlaylistKeyListeners = __.createKeyListenerInit({
+    parent: playlist,
+    actionFn: Ut.pipe(Ut.noFirstWord, exp.createChildAndAppendToQueue),
+    bgPlain: bgPlPlain,
+    bgFocus: bgPlFocus
+});
 
-exp.createQueueKeyListeners = __.createKeyListenerInit(
-    queue,
-    (content, index) => (__.discardFromQueue(index), __.orderQueue()),
-    bgQuPlain,
-    bgQuFocus
-);
+exp.createQueueKeyListeners = __.createKeyListenerInit({
+    parent: queue,
+    actionFn: (content, focusIndex) => {
+        
+        __.discardFromQueue(focusIndex.get());
+        focusIndex.get() > 1 && focusIndex.decr();
+        __.orderQueue();
+    },
+    bgPlain: bgQuPlain,
+    bgFocus: bgQuFocus
+});
 
-exp.controlsPlaylist = controlsPlaylist;
-exp.controlsQueue = controlsQueue;
-
-exp.fillPlaylist = songs => songs.forEach(exp.createChildAndAppendToPlaylist);
+exp.setControlTipsPlaylist = () => controls.content = controlsPlaylist;
+exp.setControlTipsQueue = () => controls.content = controlsQueue;
 
 exp.render = screen.render.bind(screen);
 
-exp.renderAndReturnWindows = () => {
+exp.fillPlaylistAndRender = (songs, cb) => {
+
+    __.fillPlaylist(songs);
+    cb();
+    exp.render();
+};
+
+exp.initAndReturnWindows = () => {
 
     screen.append(queue);
     screen.append(playlist);
     screen.append(playing);
     screen.append(controls);
+
     playlist.focus();
     screen.render();
 

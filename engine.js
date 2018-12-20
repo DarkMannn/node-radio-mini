@@ -6,10 +6,8 @@ const Ut = require('./utils');
 
 function renderView() {
 
-    const { playlist, queue, controls } = View.renderAndReturnWindows();
-    View.fillPlaylist(Ut.readSongs());
-    View.render();
-    
+    const { playlist, queue } = View.initAndReturnWindows();
+
     const {
         navigator: playlistNavigator,
         action: playlistAction,
@@ -23,15 +21,16 @@ function renderView() {
         postFocus: queuePost,
         changeOrder
     } = View.createQueueKeyListeners();
-    
+
     playlist.key('k', playlistNavigator);
     playlist.key('l', playlistNavigator);
     playlist.key('enter', playlistAction);
     playlist.key('q', () => {
+
         playlistPost();
         queuePre();
         queue.focus();
-        controls.content = View.controlsQueue;
+        View.setControlTipsQueue();
         View.render();
     });
     
@@ -40,21 +39,21 @@ function renderView() {
     queue.key('a', changeOrder);
     queue.key('z', changeOrder);
     queue.key('d', () => {
+
         queueAction();
         queuePre();
         View.render();
     });
     queue.key('p', () => {
+
         queuePost();
         playlistPre();
         playlist.focus();
-        controls.content = View.controlsPlaylist;
+        View.setControlTipsPlaylist();
         View.render();
     });
     
-    playlistPre();
-    playlist.focus();
-    View.render();
+    View.fillPlaylistAndRender(Ut.readSongs(), playlistPre);
 }
 
 function startStreaming() {
