@@ -29,7 +29,10 @@ __.setParentForDiscardingFunction = parent =>
     index => parent.remove(parent.children[index]);
 __.setParentForOrderingFunction = (parent, updateContentFn) =>
     () => parent.children.forEach((child, index) => {
-        if (index === 0) return;
+
+        if (index === 0) {
+            return;
+        }
         child.top = index - 1;
         child.content = updateContentFn(child.content, index);
     });
@@ -95,14 +98,18 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
             exp.createChildAndAppendToPlaying(parent.children[focusIndex.get()].content),
             exp.render();
         };
-        const action = () => {
+        const action = ({ fromTop } = {}) => {
 
-            const child = parent.children[focusIndex.get()];
-            const content = child && child.content; 
+            const index = fromTop ? 1 : focusIndex.get();
+            const child = parent.children[index];
+            const content = child && child.content;
+
             if (content) {
                 actionFn(content, focusIndex);
+                exp.render();
             }
-            exp.render();
+
+            return { content, index };
         };
         const preFocus = () => {
 
@@ -177,7 +184,9 @@ exp.createQueueKeyListeners = __.createKeyListenerInit({
     actionFn: (content, focusIndex) => {
         
         __.discardFromQueue(focusIndex.get());
-        focusIndex.get() > 1 && focusIndex.decr();
+        if (focusIndex.get() > 1) {
+            focusIndex.decr();
+        }
         __.orderQueue();
     },
     bgPlain: bgQuPlain,

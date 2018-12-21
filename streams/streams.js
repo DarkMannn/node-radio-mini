@@ -1,6 +1,7 @@
 'use strict';
 
 const Fs = require('fs');
+const EventEmitter = require('events');
 const Throttle = require('throttle-stream');
 const { PassThrough } = require('stream');
 const { makeHostSink } = require('./host-sink.js');
@@ -9,11 +10,12 @@ const Ut = require('../utils');
 const __ = {};
 const exp = {};
 
+__.MyEmitter = class extends EventEmitter {};
 
 __.sinks = [makeHostSink()];
 __.songs = [];
 
-__.haveMoreSongs = () => __.songs.length;
+__.nextSongExists = () => __.songs.length;
 __.onData = chunk => chunk && __.sinks.forEach(sink => sink.write(chunk));
 __.makeThrottle = (bytes) => new Throttle({ bytes, interval: 1000 }).on('data', __.onData);
 
@@ -25,19 +27,26 @@ exp.makeResponseStream = function makeResponseStream() {
     return sink;
 };
 
+exp.sendToQueueArray = __.songs.unshift.bind(__.songs);
+exp.removeFromQueueArray = index => __.songs.splice(index, 1);
+exp.songs = __.songs;
+
+exp.radioEvents = new __.MyEmitter();
+
 exp.startStreaming = function startStreaming(firstSong){
 
-    __.songs.push(firstSong);
+    __.songs.unshift(firstSong);
 
     (function playLoop() {
 
+        exp.radioEvents.emit('play');
         const song = __.songs.pop();
         // ucitaj speed
         (function repeatLoop() {
 
             const songReadStream = Fs.createReadStream(song);
             songReadStream.pipe(__.makeThrottle(45000));
-            songReadStream.on('end', __.haveMoreSongs() ? playLoop : repeatLoop); // mozda se evaluira odmah?
+            songReadStream.on('end', () => __.nextSongExists() ? playLoop() : repeatLoop());
         })();
     })();
 

@@ -24,7 +24,11 @@ function renderView() {
 
     playlist.key('k', playlistNavigator);
     playlist.key('l', playlistNavigator);
-    playlist.key('enter', sendToQueueWindow);
+    playlist.key('enter', () => {
+
+        const { content } = sendToQueueWindow();
+        Stream.sendToQueueArray(content);
+    });
     playlist.key('q', () => {
 
         playlistPost();
@@ -40,7 +44,9 @@ function renderView() {
     queue.key('z', changeOrder);
     queue.key('d', () => {
 
-        removeFromQueueWindow();
+        const { index } = removeFromQueueWindow();
+        Stream.removeFromQueueArray(index - 1);
+        View.createChildAndAppendToPlaying(Stream.songs);
         queuePre();
         View.render();
     });
@@ -50,6 +56,13 @@ function renderView() {
         playlistPre();
         playlist.focus();
         View.setControlTipsPlaylist();
+        View.render();
+    });
+
+    Stream.radioEvents.on('play', () => {
+
+        removeFromQueueWindow({ fromTop: true });
+        queuePre();
         View.render();
     });
     
