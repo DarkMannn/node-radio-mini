@@ -19,7 +19,7 @@ function renderView() {
         action: removeFromQueueWindow,
         preFocus: queuePre,
         postFocus: queuePost,
-        changeOrder
+        changeOrder: changeOrderQueueWindow
     } = View.createQueueKeyListeners();
 
     playlist.key('k', playlistNavigator);
@@ -38,15 +38,19 @@ function renderView() {
         View.render();
     });
     
-    queue.key('k', queueNavigator);
-    queue.key('l', queueNavigator);
+    const changeOrder = key => {
+
+        const { index1, index2 } = changeOrderQueueWindow(key);
+        Stream.changeOrderQueueArray(index1, index2);
+    };
     queue.key('a', changeOrder);
     queue.key('z', changeOrder);
+    queue.key('k', queueNavigator);
+    queue.key('l', queueNavigator);
     queue.key('d', () => {
 
         const { index } = removeFromQueueWindow();
-        Stream.removeFromQueueArray(index - 1);
-        View.createChildAndAppendToPlaying(Stream.songs);
+        Stream.removeFromQueueArray(index);
         queuePre();
         View.render();
     });

@@ -129,7 +129,8 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
                 return;
             }
 
-            const child1 = parent.children[focusIndex.get()];
+            const index1 = focusIndex.get();
+            const child1 = parent.children[index1];
             
             if (key === 'a' && focusIndex.get() > 1) {
                 focusIndex.decr();
@@ -138,7 +139,8 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
                 focusIndex.incr();
             }
             
-            const child2 = parent.children[focusIndex.get()];
+            const index2 = focusIndex.get();
+            const child2 = parent.children[index2];
 
             child1.style.bg = bgPlain;
             child2.style.bg = bgFocus;
@@ -148,6 +150,7 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
             ];
 
             exp.render();
+            return { index1, index2 };
         };
 
         return {
