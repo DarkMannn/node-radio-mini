@@ -73,7 +73,8 @@ __.fillPlaylist = songs => songs.forEach(exp.createChildAndAppendToPlaylist);
 __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
     function keyListener() {
 
-        const getLimit = () => parent.children.length - 1;
+        const getLimit = () => Math.min(parent.children.length - 1, getHeight() - 1);
+        const getHeight = () => parent.height - 1;
         const focusIndex = {
             index: 1,
             get: () => focusIndex.index,
@@ -95,7 +96,6 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
             }
 
             parent.children[focusIndex.get()].style.bg = bgFocus;
-            exp.createChildAndAppendToPlaying(parent.children[focusIndex.get()].content),
             exp.render();
         };
         const action = ({ fromTop } = {}) => {
@@ -104,12 +104,15 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
             const child = parent.children[index];
             const content = child && child.content;
 
-            if (content) {
-                actionFn(content, focusIndex);
-                exp.render();
+            if (!content) {
+                return {};
             }
 
+            actionFn(content, focusIndex);
+            exp.render();
+
             return { content, index };
+
         };
         const preFocus = () => {
 
@@ -152,13 +155,40 @@ __.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
             exp.render();
             return { index1, index2 };
         };
+        const circleList = key => {
+
+            if (parent.children.length === 1) return;
+
+            if (key === 'k' && focusIndex.get() === 1) {
+                const temp = parent.children[parent.children.length - 1].content;
+                parent.children.reduceRight((lowerChild, upperChild) => {
+
+                    lowerChild.content = upperChild.content;
+                    return upperChild;
+                });
+                parent.children[1].content = temp;
+            }
+            else if (key === 'l' && focusIndex.get() === getHeight() - 1) {
+                const temp = parent.children[1].content;
+                parent.children.reduce((upperChild, lowerChild, index) => {
+
+                    if (index > 1) {
+                        upperChild.content = lowerChild.content;
+                    }
+                    return lowerChild;
+                });
+                parent.children[parent.children.length - 1].content = temp;
+            }
+            exp.render();
+        };
 
         return {
             navigator,
             action,
             preFocus,
             postFocus,
-            ...(parent === queue && { changeOrder })
+            ...(parent === queue && { changeOrder }),
+            ...(parent === playlist && { circleList })
         };
     };
 

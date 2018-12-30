@@ -12,7 +12,8 @@ function renderView() {
         navigator: playlistNavigator,
         action: sendToQueueWindow,
         preFocus: playlistPre,
-        postFocus: playlistPost
+        postFocus: playlistPost,
+        circleList
     } = View.createPlaylistKeyListeners();
     const {
         navigator: queueNavigator,
@@ -22,12 +23,26 @@ function renderView() {
         changeOrder: changeOrderQueueWindow
     } = View.createQueueKeyListeners();
 
+    // temp
+    const log = () => {
+        Stream.log(
+            `Queue window: ${queue.length && queue.children.reduce((acc, child, i) => i > 0 ? (acc + ' ' + child.content) : '', '')}`
+        );
+        Stream.log(
+            `Queue array: ${Stream.songs.length && Stream.songs.reduceRight((acc, child) => acc + ' ' + child)}`
+        );
+        Stream.log('\n');
+    };
+    // temp
     playlist.key('k', playlistNavigator);
+    playlist.key('k', circleList);
     playlist.key('l', playlistNavigator);
+    playlist.key('l', circleList);
     playlist.key('enter', () => {
 
         const { content } = sendToQueueWindow();
         Stream.sendToQueueArray(content);
+        log(); // temp
     });
     playlist.key('q', () => {
 
@@ -43,16 +58,19 @@ function renderView() {
         const { index1, index2 } = changeOrderQueueWindow(key);
         Stream.changeOrderQueueArray(index1, index2);
     };
-    queue.key('a', changeOrder);
-    queue.key('z', changeOrder);
+    queue.key('a', key => (changeOrder(key), log()));
+    queue.key('z', key => (changeOrder(key), log()));
     queue.key('k', queueNavigator);
     queue.key('l', queueNavigator);
     queue.key('d', () => {
 
         const { index } = removeFromQueueWindow();
-        Stream.removeFromQueueArray(index);
+        if (index) {
+            Stream.removeFromQueueArray(index);
+        }
         queuePre();
         View.render();
+        log(); // temp
     });
     queue.key('p', () => {
 
@@ -77,7 +95,7 @@ function startStreaming() {
     Stream.startStreaming(Ut.readSong());
 }
 
-exports.startEngine = function startEngine() {
+module.exports = function startEngine() {
     
     renderView();
     startStreaming();
