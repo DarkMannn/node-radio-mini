@@ -5,6 +5,7 @@ const NeoBlessed = require('neo-blessed');
 const __ = {};
 const exp = {};
 
+
 __.childConfig = {
     width: '100%',
     height: 1,
