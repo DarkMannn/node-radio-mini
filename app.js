@@ -2,6 +2,8 @@
 
 'use strict';
 
+require('dotenv').config();
+
 const Path = require('path');
 const Hapi = require('hapi');
 const StreamRoutes = require('./routes');
@@ -9,8 +11,8 @@ const Engine = require('./engine.js');
 
 
 const server = Hapi.server({
-    port: 8080,
-    host: '192.168.8.102',
+    port: process.env.PORT,
+    host: process.env.HOST,
     compression: false,
     routes: {
         files: {

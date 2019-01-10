@@ -10,6 +10,7 @@
     "radiopro": "./app.js"
   },
   "dependencies": {
+    "dotenv": "^6.2.0",
     "hapi": "^17.8.1",
     "inert": "^5.1.2",
     "lame": "^1.2.4",
