@@ -14,14 +14,14 @@ function renderView() {
         preFocus: playlistPre,
         postFocus: playlistPost,
         circleList
-    } = View.createPlaylistKeyListeners();
+    } = View.playlistKeyListener;
     const {
         navigator: queueNavigator,
         action: removeFromQueueWindow,
         preFocus: queuePre,
         postFocus: queuePost,
         changeOrder: changeOrderQueueWindow
-    } = View.createQueueKeyListeners();
+    } = View.queueKeyListener;
 
     // temp
     const log = () => {

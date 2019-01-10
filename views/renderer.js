@@ -2,6 +2,7 @@
 
 const NeoBlessed = require('neo-blessed');
 const Ut = require('../utils');
+const KeyListenerFactory = require('./key-listener.factory');
 const {
     screen,
     playlist,
@@ -70,128 +71,6 @@ __.createPlayingChild = __.createChildInit({
 
 __.fillPlaylist = songs => songs.forEach(exp.createChildAndAppendToPlaylist);
 
-__.createKeyListenerInit = ({ parent, actionFn, bgPlain, bgFocus }) =>
-    function keyListener() {
-
-        const getLimit = () => Math.min(parent.children.length - 1, getHeight() - 1);
-        const getHeight = () => parent.height - 1;
-        const focusIndex = {
-            index: 1,
-            get: () => focusIndex.index,
-            incr: () => ++focusIndex.index,
-            decr: () => --focusIndex.index
-        };
-
-        const navigator = key => {
-
-            if (parent.children.length === 1) return;
-
-            parent.children[focusIndex.get()].style.bg = bgPlain;
-
-            if (key === 'k' && focusIndex.get() > 1) {
-                focusIndex.decr();
-            }
-            else if (key === 'l' && focusIndex.get() < getLimit()) {
-                focusIndex.incr();
-            }
-
-            parent.children[focusIndex.get()].style.bg = bgFocus;
-            exp.render();
-        };
-        const action = ({ fromTop } = {}) => {
-
-            const index = fromTop ? 1 : focusIndex.get();
-            const child = parent.children[index];
-            const content = child && child.content;
-
-            if (!content) {
-                return {};
-            }
-
-            actionFn(content, focusIndex);
-            exp.render();
-
-            return { content, index };
-
-        };
-        const preFocus = () => {
-
-            if (focusIndex.get() > 0 && parent.children[focusIndex.get()]) {
-                parent.children[focusIndex.get()].style.bg = bgFocus;
-            }
-        };
-        const postFocus = () => {
-
-            if (parent.children[focusIndex.get()]) {
-                (parent.children[focusIndex.get()].style.bg = bgPlain);
-            }
-        };
-        const changeOrder = key => {
-
-            if (parent.children.length === 1) {
-                return;
-            }
-
-            const index1 = focusIndex.get();
-            const child1 = parent.children[index1];
-            
-            if (key === 'a' && focusIndex.get() > 1) {
-                focusIndex.decr();
-            }
-            else if (key === 'z' && focusIndex.get() < getLimit()) {
-                focusIndex.incr();
-            }
-            
-            const index2 = focusIndex.get();
-            const child2 = parent.children[index2];
-
-            child1.style.bg = bgPlain;
-            child2.style.bg = bgFocus;
-            [child1.content, child2.content] = [
-                `${Ut.firstWord(child1.content)} ${Ut.noFirstWord(child2.content)}`,
-                `${Ut.firstWord(child2.content)} ${Ut.noFirstWord(child1.content)}`,
-            ];
-
-            exp.render();
-            return { index1, index2 };
-        };
-        const circleList = key => {
-
-            if (parent.children.length === 1) return;
-
-            if (key === 'k' && focusIndex.get() === 1) {
-                const temp = parent.children[parent.children.length - 1].content;
-                parent.children.reduceRight((lowerChild, upperChild) => {
-
-                    lowerChild.content = upperChild.content;
-                    return upperChild;
-                });
-                parent.children[1].content = temp;
-            }
-            else if (key === 'l' && focusIndex.get() === getHeight() - 1) {
-                const temp = parent.children[1].content;
-                parent.children.reduce((upperChild, lowerChild, index) => {
-
-                    if (index > 1) {
-                        upperChild.content = lowerChild.content;
-                    }
-                    return lowerChild;
-                });
-                parent.children[parent.children.length - 1].content = temp;
-            }
-            exp.render();
-        };
-
-        return {
-            navigator,
-            action,
-            preFocus,
-            postFocus,
-            ...(parent === queue && { changeOrder }),
-            ...(parent === playlist && { circleList })
-        };
-    };
-
 exp.createChildAndAppendToPlaylist = Ut.pipe(
     __.createPlaylistChild,
     __.appendToPlaylist
@@ -205,29 +84,27 @@ exp.createChildAndAppendToPlaying = Ut.pipe(
     __.appendToPlaying
 );
 
-exp.createPlaylistKeyListeners = __.createKeyListenerInit({
-    parent: playlist,
-    actionFn: Ut.pipe(Ut.noFirstWord, exp.createChildAndAppendToQueue),
+exp.playlistKeyListener = KeyListenerFactory({
+    box: playlist,
+    actionFn: Ut.pipe(Ut.pick('content'), Ut.noFirstWord, exp.createChildAndAppendToQueue),
     bgPlain: bgPlPlain,
     bgFocus: bgPlFocus
 });
 
-exp.createQueueKeyListeners = __.createKeyListenerInit({
-    parent: queue,
-    actionFn: (content, focusIndex) => {
+exp.queueKeyListener = KeyListenerFactory({
+    box: queue,
+    actionFn: ({ index, cb }) => {
         
-        __.discardFromQueue(focusIndex.get());
-        if (focusIndex.get() > 1) {
-            focusIndex.decr();
-        }
+        __.discardFromQueue(index);
         __.orderQueue();
+        cb();
     },
     bgPlain: bgQuPlain,
     bgFocus: bgQuFocus
 });
 
-exp.setControlTipsPlaylist = () => controls.content = controlsPlaylist;
-exp.setControlTipsQueue = () => controls.content = controlsQueue;
+exp.setControlTipsPlaylist = () => { controls.content = controlsPlaylist; };
+exp.setControlTipsQueue = () => { controls.content = controlsQueue; };
 
 exp.render = screen.render.bind(screen);
 

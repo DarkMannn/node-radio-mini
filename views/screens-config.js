@@ -102,7 +102,7 @@ exp.controls = NeoBlessed.box({
     height: 5,
     scrollable: true,
     label: 'Controls',
-    content: exp.controlsQueue,
+    content: exp.controlsPlaylist,
     border: {
         type: 'line'
     },
