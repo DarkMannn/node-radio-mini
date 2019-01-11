@@ -149,14 +149,14 @@ function KeyListenerFactory({ box, actionFn, bgPlain, bgFocus }) {
         __.render();
     }
 
-    return {
+    return Object.freeze({
         navigator,
         action,
         preFocus,
         postFocus,
         ...(box.children[0].content === 'Queue' && { changeOrder }),
         ...(box.children[0].content === 'Playlist' && { circleList })
-    };
+    });
 }
 
 
