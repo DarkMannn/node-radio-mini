@@ -1,0 +1,23 @@
+body {
+    background-color: rgb(73, 153, 100)
+}
+
+#main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 20% 30% 0% 30%;
+    border: 2px solid black;
+    border-radius: 25px;
+    background-color: rgb(156, 156, 156);
+}
+
+#title {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+
+#logo {
+    margin-bottom: 20px
+}
