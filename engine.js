@@ -4,36 +4,27 @@ const Stream = require('./streams');
 const View = require('./views');
 const Ut = require('./utils');
 
+const {
+    navigator: playlistNavigator,
+    action: sendToQueueWindow,
+    preFocus: playlistPreFocus,
+    postFocus: playlistPostFocus,
+    circleList
+} = View.playlistKeyListener;
+const {
+    navigator: queueNavigator,
+    action: removeFromQueueWindow,
+    preFocus: queuePreFocus,
+    postFocus: queuePostFocus,
+    changeOrder: changeOrderQueueWindow
+} = View.queueKeyListener;
+
+
 function renderView() {
 
-    const { playlist, queue } = View.initAndReturnWindows();
+    const { playlist, queue } = View.init();
+    Stream.init();
 
-    const {
-        navigator: playlistNavigator,
-        action: sendToQueueWindow,
-        preFocus: playlistPre,
-        postFocus: playlistPost,
-        circleList
-    } = View.playlistKeyListener;
-    const {
-        navigator: queueNavigator,
-        action: removeFromQueueWindow,
-        preFocus: queuePre,
-        postFocus: queuePost,
-        changeOrder: changeOrderQueueWindow
-    } = View.queueKeyListener;
-
-    // temp
-    const log = () => {
-        Stream.log(
-            `Queue window: ${queue.length && queue.children.reduce((acc, child, i) => i > 0 ? (acc + ' ' + child.content) : '', '')}`
-        );
-        Stream.log(
-            `Queue array: ${Stream.songs.length && Stream.songs.reduceRight((acc, child) => acc + ' ' + child)}`
-        );
-        Stream.log('\n');
-    };
-    // temp
     playlist.key('k', playlistNavigator);
     playlist.key('k', circleList);
     playlist.key('l', playlistNavigator);
@@ -42,24 +33,23 @@ function renderView() {
 
         const { content } = sendToQueueWindow();
         Stream.sendToQueueArray(content);
-        log(); // temp
     });
     playlist.key('q', () => {
 
-        playlistPost();
-        queuePre();
+        playlistPostFocus();
+        queuePreFocus();
         queue.focus();
         View.setControlTipsQueue();
         View.render();
     });
-    
+
     const changeOrder = key => {
 
         const { index1, index2 } = changeOrderQueueWindow(key);
         Stream.changeOrderQueueArray(index1, index2);
     };
-    queue.key('a', key => (changeOrder(key), log()));
-    queue.key('z', key => (changeOrder(key), log()));
+    queue.key('a', changeOrder);
+    queue.key('z', changeOrder);
     queue.key('k', queueNavigator);
     queue.key('l', queueNavigator);
     queue.key('d', () => {
@@ -68,14 +58,13 @@ function renderView() {
         if (index) {
             Stream.removeFromQueueArray(index);
         }
-        queuePre();
+        queuePreFocus();
         View.render();
-        log(); // temp
     });
     queue.key('p', () => {
 
-        queuePost();
-        playlistPre();
+        queuePostFocus();
+        playlistPreFocus();
         playlist.focus();
         View.setControlTipsPlaylist();
         View.render();
@@ -84,19 +73,16 @@ function renderView() {
     Stream.radioEvents.on('play', () => {
 
         removeFromQueueWindow({ fromTop: true });
-        queuePre();
+        queuePreFocus();
         View.render();
     });
-    
-    View.fillPlaylistAndRender(Ut.readSongs(), playlistPre);
+
+    View.fillPlaylistAndRender(Ut.readSongs(), playlistPreFocus);
 }
 
-function startStreaming() {
-    Stream.startStreaming(Ut.readSong());
-}
 
-module.exports = function startEngine() {
-    
+exports.startEngine = function startEngine() {
+
     renderView();
-    startStreaming();
+    Stream.startStreaming();
 };

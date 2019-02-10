@@ -29,33 +29,29 @@ __.setParentForAppendingFunction = parent =>
 __.setParentForDiscardingFunction = parent =>
     index => parent.remove(parent.children[index]);
 __.setParentForOrderingFunction = (parent, updateContentFn) =>
-    () => parent.children.forEach((child, index) => {
+    () =>
+        parent.children.forEach((child, index) => {
 
-        if (index === 0) {
-            return;
-        }
-        child.top = index - 1;
-        child.content = updateContentFn(child.content, index);
-    });
-
+            if (index === 0) {
+                return;
+            }
+            child.top = index - 1;
+            child.content = updateContentFn(child.content, index);
+        });
 __.appendToPlaylist = __.setParentForAppendingFunction(playlist);
 __.appendToQueue = __.setParentForAppendingFunction(queue);
 __.appendToPlaying = __.setParentForAppendingFunction(playing);
-
 __.discardFromQueue = __.setParentForDiscardingFunction(queue);
-
 __.orderQueue = __.setParentForOrderingFunction(
     queue,
     (content, index) => `${index}. ${Ut.noFirstWord(content)}`
 );
-
 __.createChildInit = ({ parent, config, prefix, single = false }) =>
     content => ({
         ...config,
         top: single ? 0 : parent.children.length - 1,
         content: (prefix || parent.children.length + '. ') + content
     });
-
 __.createPlaylistChild = __.createChildInit({
     parent: playlist,
     config: playlistChildConfig,
@@ -68,7 +64,6 @@ __.createPlayingChild = __.createChildInit({
     prefix: '>>> ',
     single: true
 });
-
 __.fillPlaylist = songs => songs.forEach(exp.createChildAndAppendToPlaylist);
 
 exp.createChildAndAppendToPlaylist = Ut.pipe(
@@ -83,18 +78,16 @@ exp.createChildAndAppendToPlaying = Ut.pipe(
     __.createPlayingChild,
     __.appendToPlaying
 );
-
 exp.playlistKeyListener = KeyListenerFactory({
     box: playlist,
     actionFn: Ut.pipe(Ut.pick('content'), Ut.noFirstWord, exp.createChildAndAppendToQueue),
     bgPlain: bgPlPlain,
     bgFocus: bgPlFocus
 });
-
 exp.queueKeyListener = KeyListenerFactory({
     box: queue,
     actionFn: ({ index, cb }) => {
-        
+
         __.discardFromQueue(index);
         __.orderQueue();
         cb();
@@ -102,20 +95,16 @@ exp.queueKeyListener = KeyListenerFactory({
     bgPlain: bgQuPlain,
     bgFocus: bgQuFocus
 });
-
 exp.setControlTipsPlaylist = () => { controls.content = controlsPlaylist; };
 exp.setControlTipsQueue = () => { controls.content = controlsQueue; };
-
 exp.render = screen.render.bind(screen);
-
 exp.fillPlaylistAndRender = (songs, cb) => {
 
     __.fillPlaylist(songs);
     cb();
     exp.render();
 };
-
-exp.initAndReturnWindows = () => {
+exp.init = () => {
 
     screen.append(queue);
     screen.append(playlist);

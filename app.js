@@ -7,8 +7,7 @@ require('dotenv').config();
 const Path = require('path');
 const Hapi = require('hapi');
 const StreamRoutes = require('./routes');
-const Engine = require('./engine.js');
-
+const { startEngine } = require('./engine.js');
 
 const server = Hapi.server({
     port: process.env.PORT,
@@ -21,11 +20,12 @@ const server = Hapi.server({
     }
 });
 
-const startApp = async () => {
+
+void async function startApp() {
 
     try {
         await server.register(StreamRoutes);
-        Engine();
+        startEngine();
 
         console.log(`Server running at ${server.info.uri}`);
         await server.start();
@@ -34,7 +34,4 @@ const startApp = async () => {
         console.log(`Server error: ${err}`);
         process.exit(1);
     }
-};
-
-
-startApp();
+}();
