@@ -1,7 +1,7 @@
 {
   "name": "node-radio-mini",
   "version": "0.0.1",
-  "description": "Do it yourself internet radio made with Node.js",
+  "description": "A terminal based radio streaming solution made entirely in Node.js",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
