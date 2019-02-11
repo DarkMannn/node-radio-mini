@@ -1,6 +1,6 @@
 {
   "name": "node-radio-mini",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A terminal based radio streaming solution made entirely in Node.js",
   "homepage": "https://github.com/DarkMannn/node-radio-mini",
   "main": "app.js",
