@@ -10,8 +10,8 @@ const StreamRoutes = require('./routes');
 const { startEngine } = require('./engine.js');
 
 const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    port: process.env.PORT || 'localhost',
+    host: process.env.HOST || '8080',
     compression: false,
     routes: {
         files: {
