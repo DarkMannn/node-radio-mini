@@ -6,7 +6,8 @@ This app is a radio streaming solution made entirely in Node.js. It features a t
 Purpose of the whole project was to have fun and experiment. Production ready radio server should use Shoutcast / Icecast or something similar.
 
 ## Usage
-You need to go into directory that contains music and just run `node-radio-mini`.
+When you clone this repository, go into the root and run `npm link`. This will make a `node-radio-mini` command available to be run from anywhere.
+Next you need to go into directory that contains music and run the command `node-radio-mini`.
 
     > node-radio-mini
 That command is going to read all mp3 files from current directory and display them on you favourite terminal, similarly like on the image below.
