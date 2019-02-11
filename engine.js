@@ -70,10 +70,11 @@ function renderView() {
         View.render();
     });
 
-    Stream.radioEvents.on('play', () => {
+    Stream.radioEvents.on('play', (song) => {
 
         removeFromQueueWindow({ fromTop: true });
         queuePreFocus();
+        View.createChildAndAppendToPlaying(song);
         View.render();
     });
 

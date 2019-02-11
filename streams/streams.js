@@ -44,8 +44,8 @@ exp.startStreaming = function startStreaming() {
 
     (function playLoop() {
 
-        exp.radioEvents.emit('play');
         const song = __.songs.pop();
+        exp.radioEvents.emit('play', song);
         const { format: { bit_rate: bitRate } } = ffprobeSync(Path.join(process.cwd(), song));
 
         (function repeatLoop() {
