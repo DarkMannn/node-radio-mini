@@ -12,7 +12,7 @@ Next you need to go into directory that contains music and run the command `node
     > node-radio-mini
 That command is going to read all mp3 files from current directory and display them on you favourite terminal, similarly like on the image below.
 
-![screenshot](./screenshot.png)
+![screenshot](/screenshot.png)
 
 There are four windows. 'Playlist' windows contains all the songs from you current directory. 'Queue' windows contains all queued up and ready to play songs. 'Now playing' windows is showing currently streamed song. 'Controls' window is just a helper for seeing available controls at that point of time.
 
@@ -21,7 +21,7 @@ If you don't have any songs queued up, the last song will repeat replay.
 
 This app is also serving single html page that will automatically connect to the streaming endpoint shown above. The page is served at `localhost:8080`. You can see how the page appears on the browser in the next screenshot:
 
-![screenshot](./screenshot2.png)
+![screenshot](/screenshot2.png)
 
 ### Commands
 
