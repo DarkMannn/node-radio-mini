@@ -1,27 +1,19 @@
-'use strict';
-
 const Fs = require('fs');
 const { extname } = require('path');
+const internals = {};
 
-const __ = {};
-const exp = {};
+internals.readDir = () => Fs.readdirSync(process.cwd(), { withFileTypes: true });
+internals.isMp3 = item => item.isFile && extname(item.name) === '.mp3';
 
+exports.readSongs = () => internals.readDir().filter(internals.isMp3).map(exports.pick('name'));
+exports.readSong = () => internals.readDir().filter(internals.isMp3)[0].name;
 
-__.readDir = () => Fs.readdirSync(process.cwd(), { withFileTypes: true });
-__.isMp3 = item => item.isFile && extname(item.name) === '.mp3';
+exports.pipe2 = (fn1, fn2) => (...args) => fn2(fn1(...args));
+exports.pipe = (...fns) => fns.reduce(exports.pipe2);
 
-exp.readSongs = () => __.readDir().filter(__.isMp3).map(exp.pick('name'));
-exp.readSong = () => __.readDir().filter(__.isMp3)[0].name;
+exports.unary = fn => (arg) => fn(arg);
 
-exp.pipe2 = (fn1, fn2) => (...args) => fn2(fn1(...args));
-exp.pipe = (...fns) => fns.reduce(exp.pipe2);
+exports.noFirstWord = str => str.substring(str.indexOf(' ') + 1);
+exports.firstWord = str => str.split(' ')[0];
 
-exp.unary = fn => (arg) => fn(arg);
-
-exp.noFirstWord = str => str.substring(str.indexOf(' ') + 1);
-exp.firstWord = str => str.split(' ')[0];
-
-exp.pick = property => obj => obj[property];
-
-
-module.exports = exp;
+exports.pick = property => obj => obj[property];

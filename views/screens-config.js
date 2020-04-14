@@ -1,45 +1,40 @@
-'use strict';
-
 const NeoBlessed = require('neo-blessed');
+const internals = {};
 
-const __ = {};
-const exp = {};
-
-
-__.childConfig = {
+internals.childConfig = {
     width: '100%',
     height: 1,
     left: 0
 };
-__.playlistChildColors = {
+internals.playlistChildColors = {
     fg: 'cyan',
     bg: 'grey'
 };
-__.queueChildColors = {
+internals.queueChildColors = {
     fg: 'white',
     bg: 'blue'
 };
-__.playingChildColors = {
+internals.playingChildColors = {
     fg: 'green',
     bg: 'black'
 };
 
-exp.controlsPlaylist = '  q  -  focus queue  |  k - go up\n' +
+exports.controlsPlaylist = '  q  -  focus queue  |  k - go up\n' +
     'enter - enqueue song |  l - go down\n';
-exp.controlsQueue = 'p - focus playlist | k - go up\n' +
+exports.controlsQueue = 'p - focus playlist | k - go up\n' +
     'd -  dequeue song  | l - go down\n' +
     'a,z - move song up or down the queue';
 
-exp.bgPlFocus = 'black';
-exp.bgPlPlain = 'grey';
-exp.bgQuFocus = 'black';
-exp.bgQuPlain = 'blue';
+exports.bgPlFocus = 'black';
+exports.bgPlPlain = 'grey';
+exports.bgQuFocus = 'black';
+exports.bgQuPlain = 'blue';
 
-exp.screen = NeoBlessed.screen({ smartSCR: true });    
-exp.screen.title = 'Node Radio Mini';
-exp.screen.key(['escape', 'C-c'], (ch, key) => process.exit(0));
+exports.screen = NeoBlessed.screen({ smartSCR: true });
+exports.screen.title = 'Node Radio Mini';
+exports.screen.key(['escape', 'C-c'], (ch, key) => process.exit(0));
 
-exp.playlist = NeoBlessed.box({
+exports.playlist = NeoBlessed.box({
     top: 0,
     left: 0,
     width: '50%',
@@ -58,7 +53,7 @@ exp.playlist = NeoBlessed.box({
     }
 });
 
-exp.queue = NeoBlessed.box({
+exports.queue = NeoBlessed.box({
     top: 0,
     left: '50%',
     width: '50%',
@@ -77,7 +72,7 @@ exp.queue = NeoBlessed.box({
     }
 });
 
-exp.playing = NeoBlessed.box({
+exports.playing = NeoBlessed.box({
     top: '70%',
     left: '50%',
     width: '50%',
@@ -95,14 +90,14 @@ exp.playing = NeoBlessed.box({
     }
 });
 
-exp.controls = NeoBlessed.box({
+exports.controls = NeoBlessed.box({
     top: '85%',
     left: '50%',
     width: '50%',
     height: 5,
     scrollable: true,
     label: 'Controls',
-    content: exp.controlsPlaylist,
+    content: exports.controlsPlaylist,
     border: {
         type: 'line'
     },
@@ -115,9 +110,6 @@ exp.controls = NeoBlessed.box({
     }
 });
 
-exp.playlistChildConfig = { ...__.childConfig, ...__.playlistChildColors };
-exp.queueChildConfig = { ...__.childConfig, ...__.queueChildColors };
-exp.playingChildConfig = { ...__.childConfig, ...__.playingChildColors };
-
-
-module.exports = exp;
+exports.playlistChildConfig = { ...internals.childConfig, ...internals.playlistChildColors };
+exports.queueChildConfig = { ...internals.childConfig, ...internals.queueChildColors };
+exports.playingChildConfig = { ...internals.childConfig, ...internals.playingChildColors };

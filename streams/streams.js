@@ -1,5 +1,3 @@
-'use strict';
-
 const Fs = require('fs');
 const Path = require('path');
 const EventEmitter = require('events');
@@ -7,60 +5,57 @@ const Throttle = require('throttle-stream');
 const { ffprobeSync } = require('@dropb/ffprobe');
 const { PassThrough } = require('stream');
 const { makeHostSink } = require('./host-sink.js');
-const Ut = require('../utils');
+const Utils = require('../utils');
+const internals = {};
 
-const __ = {};
-const exp = {};
+internals.MyEmitter = class extends EventEmitter {};
+internals.sinks = [];
+internals.songs = [];
 
+internals.queueWindowIndexToArrayIndex = index => Math.abs((index - 1) - internals.songs.length + 1);
+internals.nextSongExists = () => !!internals.songs.length;
+internals.onData = chunk => chunk && internals.sinks.forEach(sink => sink.write(chunk));
+internals.makeThrottle = bytes => new Throttle({ bytes, interval: 1000 }).on('data', internals.onData);
 
-__.MyEmitter = class extends EventEmitter {};
-__.sinks = [];
-__.songs = [];
-
-__.queueWindowIndexToArrayIndex = index => Math.abs((index - 1) - __.songs.length + 1);
-__.nextSongExists = () => !!__.songs.length;
-__.onData = chunk => chunk && __.sinks.forEach(sink => sink.write(chunk));
-__.makeThrottle = bytes => new Throttle({ bytes, interval: 1000 }).on('data', __.onData);
-
-exp.radioEvents = new __.MyEmitter();
-exp.makeResponseStream = function makeResponseStream() {
+exports.radioEvents = new internals.MyEmitter();
+exports.makeResponseStream = function makeResponseStream() {
 
     const sink = new PassThrough();
-    __.sinks.push(sink);
+    internals.sinks.push(sink);
 
     return sink;
 };
-exp.sendToQueueArray = song => __.songs.unshift(Ut.noFirstWord(song));
-exp.removeFromQueueArray = index =>
-    __.songs.splice(__.queueWindowIndexToArrayIndex(index), 1);
-exp.changeOrderQueueArray = (indexWindow1, indexWindow2) => {
+exports.sendToQueueArray = song => internals.songs.unshift(Utils.noFirstWord(song));
+exports.removeFromQueueArray = index =>
+    internals.songs.splice(internals.queueWindowIndexToArrayIndex(index), 1);
+exports.changeOrderQueueArray = (indexWindow1, indexWindow2) => {
 
-    const indexArray1 = __.queueWindowIndexToArrayIndex(indexWindow1);
-    const indexArray2 = __.queueWindowIndexToArrayIndex(indexWindow2);
-    [__.songs[indexArray1], __.songs[indexArray2]] =
-        [__.songs[indexArray2], __.songs[indexArray1]];
+    const indexArray1 = internals.queueWindowIndexToArrayIndex(indexWindow1);
+    const indexArray2 = internals.queueWindowIndexToArrayIndex(indexWindow2);
+    [internals.songs[indexArray1], internals.songs[indexArray2]] =
+        [internals.songs[indexArray2], internals.songs[indexArray1]];
 };
-exp.startStreaming = function startStreaming() {
+exports.startStreaming = function startStreaming() {
 
     (function playLoop() {
 
-        const song = __.songs.pop();
-        exp.radioEvents.emit('play', song);
+        const song = internals.songs.pop();
+        exports.radioEvents.emit('play', song);
         const { format: { bit_rate: bitRate } } = ffprobeSync(Path.join(process.cwd(), song));
 
         (function repeatLoop() {
 
             const songReadStream = Fs.createReadStream(song);
-            songReadStream.pipe(__.makeThrottle(parseInt(bitRate)));
-            songReadStream.on('end', () => __.nextSongExists() ? playLoop() : repeatLoop());
+            songReadStream.pipe(internals.makeThrottle(parseInt(bitRate)));
+            songReadStream.on('end', () => internals.nextSongExists() ? playLoop() : repeatLoop());
         })();
     })();
 
 };
-exp.init = () => {
+exports.init = () => {
 
-    __.sinks.push(makeHostSink());
-    __.songs.unshift(Ut.readSong());
+    internals.sinks.push(makeHostSink());
+    internals.songs.unshift(Utils.readSong());
 };
 
-module.exports = { ...exp, songs: __.songs};
+exports.songs = internals.songs;

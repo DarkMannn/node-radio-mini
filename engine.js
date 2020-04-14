@@ -1,8 +1,7 @@
-'use strict';
-
 const Stream = require('./streams');
 const View = require('./views');
-const Ut = require('./utils');
+const Utils = require('./utils');
+const internals = {};
 
 const {
     navigator: playlistNavigator,
@@ -19,8 +18,7 @@ const {
     changeOrder: changeOrderQueueWindow
 } = View.queueKeyListener;
 
-
-function renderView() {
+internals.renderView = () => {
 
     const { playlist, queue } = View.init();
     Stream.init();
@@ -78,12 +76,11 @@ function renderView() {
         View.render();
     });
 
-    View.fillPlaylistAndRender(Ut.readSongs(), playlistPreFocus);
+    View.fillPlaylistAndRender(Utils.readSongs(), playlistPreFocus);
 }
 
+exports.startEngine = () => {
 
-exports.startEngine = function startEngine() {
-
-    renderView();
+    internals.renderView();
     Stream.startStreaming();
 };

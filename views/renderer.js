@@ -1,7 +1,5 @@
-'use strict';
-
 const NeoBlessed = require('neo-blessed');
-const Ut = require('../utils');
+const Utils = require('../utils');
 const KeyListenerFactory = require('./key-listener.factory');
 const {
     screen,
@@ -19,16 +17,13 @@ const {
     controlsPlaylist,
     controlsQueue
 } = require('./screens-config');
+const internals = {};
 
-const __ = {};
-const exp = {};
-
-
-__.setParentForAppendingFunction = parent =>
+internals.setParentForAppendingFunction = parent =>
     config => parent.append(NeoBlessed.box(config));
-__.setParentForDiscardingFunction = parent =>
+internals.setParentForDiscardingFunction = parent =>
     index => parent.remove(parent.children[index]);
-__.setParentForOrderingFunction = (parent, updateContentFn) =>
+internals.setParentForOrderingFunction = (parent, updateContentFn) =>
     () =>
         parent.children.forEach((child, index) => {
 
@@ -38,73 +33,73 @@ __.setParentForOrderingFunction = (parent, updateContentFn) =>
             child.top = index - 1;
             child.content = updateContentFn(child.content, index);
         });
-__.appendToPlaylist = __.setParentForAppendingFunction(playlist);
-__.appendToQueue = __.setParentForAppendingFunction(queue);
-__.appendToPlaying = __.setParentForAppendingFunction(playing);
-__.discardFromQueue = __.setParentForDiscardingFunction(queue);
-__.orderQueue = __.setParentForOrderingFunction(
+internals.appendToPlaylist = internals.setParentForAppendingFunction(playlist);
+internals.appendToQueue = internals.setParentForAppendingFunction(queue);
+internals.appendToPlaying = internals.setParentForAppendingFunction(playing);
+internals.discardFromQueue = internals.setParentForDiscardingFunction(queue);
+internals.orderQueue = internals.setParentForOrderingFunction(
     queue,
-    (content, index) => `${index}. ${Ut.noFirstWord(content)}`
+    (content, index) => `${index}. ${Utils.noFirstWord(content)}`
 );
-__.createChildInit = ({ parent, config, prefix, single = false }) =>
+internals.createChildInit = ({ parent, config, prefix, single = false }) =>
     content => ({
         ...config,
         top: single ? 0 : parent.children.length - 1,
         content: (prefix || parent.children.length + '. ') + content
     });
-__.createPlaylistChild = __.createChildInit({
+internals.createPlaylistChild = internals.createChildInit({
     parent: playlist,
     config: playlistChildConfig,
     prefix: '- '
 });
-__.createQueueChild = __.createChildInit({ parent: queue, config: queueChildConfig });
-__.createPlayingChild = __.createChildInit({
+internals.createQueueChild = internals.createChildInit({ parent: queue, config: queueChildConfig });
+internals.createPlayingChild = internals.createChildInit({
     parent: playing,
     config: playingChildConfig,
     prefix: '>>> ',
     single: true
 });
-__.fillPlaylist = songs => songs.forEach(exp.createChildAndAppendToPlaylist);
+internals.fillPlaylist = songs => songs.forEach(exports.createChildAndAppendToPlaylist);
 
-exp.createChildAndAppendToPlaylist = Ut.pipe(
-    __.createPlaylistChild,
-    __.appendToPlaylist
+exports.createChildAndAppendToPlaylist = Utils.pipe(
+    internals.createPlaylistChild,
+    internals.appendToPlaylist
 );
-exp.createChildAndAppendToQueue = Ut.pipe(
-    __.createQueueChild,
-    __.appendToQueue
+exports.createChildAndAppendToQueue = Utils.pipe(
+    internals.createQueueChild,
+    internals.appendToQueue
 );
-exp.createChildAndAppendToPlaying = Ut.pipe(
-    __.createPlayingChild,
-    __.appendToPlaying
+exports.createChildAndAppendToPlaying = Utils.pipe(
+    internals.createPlayingChild,
+    internals.appendToPlaying
 );
-exp.playlistKeyListener = KeyListenerFactory({
+exports.playlistKeyListener = KeyListenerFactory({
     box: playlist,
-    actionFn: Ut.pipe(Ut.pick('content'), Ut.noFirstWord, exp.createChildAndAppendToQueue),
+    actionFn: Utils.pipe(Utils.pick('content'), Utils.noFirstWord, exports.createChildAndAppendToQueue),
     bgPlain: bgPlPlain,
     bgFocus: bgPlFocus
 });
-exp.queueKeyListener = KeyListenerFactory({
+exports.queueKeyListener = KeyListenerFactory({
     box: queue,
     actionFn: ({ index, cb }) => {
 
-        __.discardFromQueue(index);
-        __.orderQueue();
+        internals.discardFromQueue(index);
+        internals.orderQueue();
         cb();
     },
     bgPlain: bgQuPlain,
     bgFocus: bgQuFocus
 });
-exp.setControlTipsPlaylist = () => { controls.content = controlsPlaylist; };
-exp.setControlTipsQueue = () => { controls.content = controlsQueue; };
-exp.render = screen.render.bind(screen);
-exp.fillPlaylistAndRender = (songs, cb) => {
+exports.setControlTipsPlaylist = () => { controls.content = controlsPlaylist; };
+exports.setControlTipsQueue = () => { controls.content = controlsQueue; };
+exports.render = screen.render.bind(screen);
+exports.fillPlaylistAndRender = (songs, cb) => {
 
-    __.fillPlaylist(songs);
+    internals.fillPlaylist(songs);
     cb();
-    exp.render();
+    exports.render();
 };
-exp.init = () => {
+exports.init = () => {
 
     screen.append(queue);
     screen.append(playlist);
@@ -116,6 +111,3 @@ exp.init = () => {
 
     return { playlist, queue, playing, controls };
 };
-
-
-module.exports = exp;

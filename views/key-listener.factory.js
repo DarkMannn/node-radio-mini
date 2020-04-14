@@ -1,12 +1,10 @@
 const { screen } = require('./screens-config');
-const Ut = require('../utils');
+const Utils = require('../utils');
+const internals = {};
 
-const __ = {};
+internals.render = screen.render.bind(screen);
 
-__.render = screen.render.bind(screen);
-
-
-function KeyListenerFactory({ box, actionFn, bgPlain, bgFocus }) {
+exports.KeyListenerFactory = ({ box, actionFn, bgPlain, bgFocus }) => {
 
     const getHeight = () => box.height - 1;
     const getChildrenLength = () => box.children.length - 1;
@@ -60,7 +58,7 @@ function KeyListenerFactory({ box, actionFn, bgPlain, bgFocus }) {
         unfocusedChild.style.bg = bgPlain;
         focusedChild.style.bg = bgFocus;
 
-        __.render();
+        internals.render();
     }
 
     function action({ fromTop } = {}) {
@@ -78,7 +76,7 @@ function KeyListenerFactory({ box, actionFn, bgPlain, bgFocus }) {
             index: focusIndexer.get(),
             cb: focusIndexer.decr
         });
-        __.render();
+        internals.render();
 
         return { content, index };
     }
@@ -113,11 +111,11 @@ function KeyListenerFactory({ box, actionFn, bgPlain, bgFocus }) {
         child1.style.bg = bgPlain;
         child2.style.bg = bgFocus;
         [child1.content, child2.content] = [
-            `${Ut.firstWord(child1.content)} ${Ut.noFirstWord(child2.content)}`,
-            `${Ut.firstWord(child2.content)} ${Ut.noFirstWord(child1.content)}`,
+            `${Utils.firstWord(child1.content)} ${Utils.noFirstWord(child2.content)}`,
+            `${Utils.firstWord(child2.content)} ${Utils.noFirstWord(child1.content)}`,
         ];
 
-        __.render();
+        internals.render();
 
         return { index1, index2 };
     }
@@ -158,7 +156,7 @@ function KeyListenerFactory({ box, actionFn, bgPlain, bgFocus }) {
             scrollRememberer.stopScroll();
         }
 
-        __.render();
+        internals.render();
     }
 
     return Object.freeze({
@@ -171,5 +169,4 @@ function KeyListenerFactory({ box, actionFn, bgPlain, bgFocus }) {
     });
 }
 
-
-module.exports = KeyListenerFactory;
+module.exports = exports.KeyListenerFactory;

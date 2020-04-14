@@ -1,32 +1,32 @@
-'use strict';
-
-const File = require('inert');
 const { makeResponseStream } = require('../streams');
-
 
 const plugin = {
 
     name: 'streamServer',
 
-    register: async (server, options) => {
-
-        await server.register(File);
+    register: async (server) => {
 
         server.route({
             method: 'GET',
             path: '/',
-            handler: (req, h) => h.file('index.html')
+            handler: (_, h) => h.file('index.html')
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/{filename}',
+            handler: {
+                file: (req) => req.params.filename
+            }
         });
 
         server.route({
             method: 'GET',
             path: '/stream',
-            handler: (req, h) => h.response(makeResponseStream()).type('audio/mpeg')
+            handler: (_, h) => h.response(makeResponseStream()).type('audio/mpeg')
         });
 
     }
-
 };
-
 
 module.exports = plugin;
