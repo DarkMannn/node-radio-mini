@@ -1,6 +1,10 @@
 const NeoBlessed = require('neo-blessed');
 const internals = {};
 
+/**
+ * Style config for the 'neo-blessed' library
+ */
+
 internals.childConfig = {
     width: '100%',
     height: 1,
@@ -110,6 +114,15 @@ exports.controls = NeoBlessed.box({
     }
 });
 
-exports.playlistChildConfig = { ...internals.childConfig, ...internals.playlistChildColors };
-exports.queueChildConfig = { ...internals.childConfig, ...internals.queueChildColors };
-exports.playingChildConfig = { ...internals.childConfig, ...internals.playingChildColors };
+exports.playlistChildConfig = {
+    ...internals.childConfig,
+    ...internals.playlistChildColors
+};
+exports.queueChildConfig = {
+    ...internals.childConfig,
+    ...internals.queueChildColors
+};
+exports.playingChildConfig = {
+    ...internals.childConfig,
+    ...internals.playingChildColors
+};

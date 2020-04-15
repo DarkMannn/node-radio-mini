@@ -39,7 +39,7 @@ internals.appendToPlaying = internals.setParentForAppendingFunction(playing);
 internals.discardFromQueue = internals.setParentForDiscardingFunction(queue);
 internals.orderQueue = internals.setParentForOrderingFunction(
     queue,
-    (content, index) => `${index}. ${Utils.noFirstWord(content)}`
+    (content, index) => `${index}. ${Utils.discardFirstWord(content)}`
 );
 internals.createChildInit = ({ parent, config, prefix, single = false }) =>
     content => ({
@@ -75,7 +75,7 @@ exports.createChildAndAppendToPlaying = Utils.pipe(
 );
 exports.playlistKeyListener = KeyListenerFactory({
     box: playlist,
-    actionFn: Utils.pipe(Utils.pick('content'), Utils.noFirstWord, exports.createChildAndAppendToQueue),
+    actionFn: Utils.pipe(Utils.pick('content'), Utils.discardFirstWord, exports.createChildAndAppendToQueue),
     bgPlain: bgPlPlain,
     bgFocus: bgPlFocus
 });

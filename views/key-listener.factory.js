@@ -111,8 +111,8 @@ exports.KeyListenerFactory = ({ box, actionFn, bgPlain, bgFocus }) => {
         child1.style.bg = bgPlain;
         child2.style.bg = bgFocus;
         [child1.content, child2.content] = [
-            `${Utils.firstWord(child1.content)} ${Utils.noFirstWord(child2.content)}`,
-            `${Utils.firstWord(child2.content)} ${Utils.noFirstWord(child1.content)}`,
+            `${Utils.getFirstWord(child1.content)} ${Utils.discardFirstWord(child2.content)}`,
+            `${Utils.getFirstWord(child2.content)} ${Utils.discardFirstWord(child1.content)}`,
         ];
 
         internals.render();
@@ -167,6 +167,6 @@ exports.KeyListenerFactory = ({ box, actionFn, bgPlain, bgFocus }) => {
         ...(box.children[0].content === 'Queue' && { changeOrder }),
         ...(box.children[0].content === 'Playlist' && { circleList })
     });
-}
+};
 
 module.exports = exports.KeyListenerFactory;

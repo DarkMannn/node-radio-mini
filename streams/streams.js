@@ -25,7 +25,7 @@ exports.makeResponseStream = function makeResponseStream() {
 
     return sink;
 };
-exports.sendToQueueArray = song => internals.songs.unshift(Utils.noFirstWord(song));
+exports.sendToQueueArray = song => internals.songs.unshift(Utils.discardFirstWord(song));
 exports.removeFromQueueArray = index =>
     internals.songs.splice(internals.queueWindowIndexToArrayIndex(index), 1);
 exports.changeOrderQueueArray = (indexWindow1, indexWindow2) => {
