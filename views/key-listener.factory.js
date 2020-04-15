@@ -159,14 +159,14 @@ exports.KeyListenerFactory = ({ box, actionFn, bgPlain, bgFocus }) => {
         internals.render();
     }
 
-    return Object.freeze({
+    return {
         navigator,
         action,
         preFocus,
         postFocus,
         ...(box.children[0].content === 'Queue' && { changeOrder }),
         ...(box.children[0].content === 'Playlist' && { circleList })
-    });
+    };
 };
 
 module.exports = exports.KeyListenerFactory;

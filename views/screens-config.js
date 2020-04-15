@@ -5,14 +5,14 @@ const internals = {};
  * Style config for the 'neo-blessed' library
  */
 
-internals.childConfig = {
+internals.boxChilCommonConfig = {
     width: '100%',
     height: 1,
     left: 0
 };
 internals.playlistChildColors = {
-    fg: 'cyan',
-    bg: 'grey'
+    fg: 'white',
+    bg: 'green'
 };
 internals.queueChildColors = {
     fg: 'white',
@@ -23,14 +23,29 @@ internals.playingChildColors = {
     bg: 'black'
 };
 
-exports.controlsPlaylist = '  q  -  focus queue  |  k - go up\n' +
+exports.playlistChildConfig = {
+    ...internals.boxChilCommonConfig,
+    ...internals.playlistChildColors
+};
+exports.queueChildConfig = {
+    ...internals.boxChilCommonConfig,
+    ...internals.queueChildColors
+};
+exports.playingChildConfig = {
+    ...internals.boxChilCommonConfig,
+    ...internals.playingChildColors
+};
+
+exports.controlsPlaylist =
+    '  q  -  focus queue  |  k - go up\n' +
     'enter - enqueue song |  l - go down\n';
-exports.controlsQueue = 'p - focus playlist | k - go up\n' +
+exports.controlsQueue =
+    'p - focus playlist | k - go up\n' +
     'd -  dequeue song  | l - go down\n' +
     'a,z - move song up or down the queue';
 
 exports.bgPlFocus = 'black';
-exports.bgPlPlain = 'grey';
+exports.bgPlPlain = 'green';
 exports.bgQuFocus = 'black';
 exports.bgQuPlain = 'blue';
 
@@ -50,7 +65,7 @@ exports.playlist = NeoBlessed.box({
     },
     style: {
         fg: 'white',
-        bg: 'grey',
+        bg: 'green',
         border: {
             fg: '#f0f0f0'
         }
@@ -113,16 +128,3 @@ exports.controls = NeoBlessed.box({
         }
     }
 });
-
-exports.playlistChildConfig = {
-    ...internals.childConfig,
-    ...internals.playlistChildColors
-};
-exports.queueChildConfig = {
-    ...internals.childConfig,
-    ...internals.queueChildColors
-};
-exports.playingChildConfig = {
-    ...internals.childConfig,
-    ...internals.playingChildColors
-};

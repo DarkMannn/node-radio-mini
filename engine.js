@@ -3,39 +3,31 @@ const View = require('./views');
 const Utils = require('./utils');
 const internals = {};
 
-const {
-    navigator: playlistNavigator,
-    action: sendToQueueWindow,
-    preFocus: playlistPreFocus,
-    postFocus: playlistPostFocus,
-    circleList
-} = View.playlistKeyListener;
-const {
-    navigator: queueNavigator,
-    action: removeFromQueueWindow,
-    preFocus: queuePreFocus,
-    postFocus: queuePostFocus,
-    changeOrder: changeOrderQueueWindow
-} = View.queueKeyListener;
+const Playlist = View.playlistKeyListener;
+Playlist.sendToQueueWindow = Playlist.action;
+
+const Queue = View.queueKeyListener;
+Queue.removeFromQueueWindow = Queue.action;
+Queue.changeOrderQueueWindow = Queue.changeOrder;
 
 internals.renderView = () => {
 
     const { playlist, queue } = View.init();
     Stream.init();
 
-    playlist.key('k', playlistNavigator);
-    playlist.key('k', circleList);
-    playlist.key('l', playlistNavigator);
-    playlist.key('l', circleList);
+    playlist.key('k', Playlist.navigator);
+    playlist.key('k', Playlist.circleList);
+    playlist.key('l', Playlist.navigator);
+    playlist.key('l', Playlist.circleList);
     playlist.key('enter', () => {
 
-        const { content } = sendToQueueWindow();
+        const { content } = Playlist.sendToQueueWindow();
         Stream.sendToQueueArray(content);
     });
     playlist.key('q', () => {
 
-        playlistPostFocus();
-        queuePreFocus();
+        Playlist.postFocus();
+        Queue.preFocus();
         queue.focus();
         View.setControlTipsQueue();
         View.render();
@@ -43,26 +35,26 @@ internals.renderView = () => {
 
     const changeOrder = key => {
 
-        const { index1, index2 } = changeOrderQueueWindow(key);
+        const { index1, index2 } = Queue.changeOrderQueueWindow(key);
         Stream.changeOrderQueueArray(index1, index2);
     };
     queue.key('a', changeOrder);
     queue.key('z', changeOrder);
-    queue.key('k', queueNavigator);
-    queue.key('l', queueNavigator);
+    queue.key('k', Queue.navigator);
+    queue.key('l', Queue.navigator);
     queue.key('d', () => {
 
-        const { index } = removeFromQueueWindow();
+        const { index } = Queue.removeFromQueueWindow();
         if (index) {
             Stream.removeFromQueueArray(index);
         }
-        queuePreFocus();
+        Queue.preFocus();
         View.render();
     });
     queue.key('p', () => {
 
-        queuePostFocus();
-        playlistPreFocus();
+        Queue.postFocus();
+        Playlist.preFocus();
         playlist.focus();
         View.setControlTipsPlaylist();
         View.render();
@@ -70,14 +62,14 @@ internals.renderView = () => {
 
     Stream.radioEvents.on('play', (song) => {
 
-        removeFromQueueWindow({ fromTop: true });
-        queuePreFocus();
+        Queue.removeFromQueueWindow({ fromTop: true });
+        Queue.preFocus();
         View.createChildAndAppendToPlaying(song);
         View.render();
     });
 
-    View.fillPlaylistAndRender(Utils.readSongs(), playlistPreFocus);
-}
+    View.fillPlaylistAndRender(Utils.readSongs(), Playlist.preFocus);
+};
 
 exports.startEngine = () => {
 
