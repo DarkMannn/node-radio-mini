@@ -80,3 +80,6 @@ typings/
 
 # test music
 music/**
+
+# notes
+todo.txt

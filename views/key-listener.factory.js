@@ -1,8 +1,8 @@
-const { screen } = require('./screens-config');
+const { Screen } = require('./screens-config');
 const Utils = require('../utils');
 const internals = {};
 
-internals.render = screen.render.bind(screen);
+internals.render = Screen.render.bind(Screen);
 
 exports.KeyListenerFactory = ({ box, actionFn, bgPlain, bgFocus }) => {
 

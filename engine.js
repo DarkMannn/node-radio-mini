@@ -12,23 +12,23 @@ Queue.changeOrderQueueWindow = Queue.changeOrder;
 
 internals.renderView = () => {
 
-    const { playlist, queue } = View.init();
+    const { PlaylistBox, QueueBox } = View.init();
     Stream.init();
 
-    playlist.key('k', Playlist.navigator);
-    playlist.key('k', Playlist.circleList);
-    playlist.key('l', Playlist.navigator);
-    playlist.key('l', Playlist.circleList);
-    playlist.key('enter', () => {
+    PlaylistBox.key('k', Playlist.navigator);
+    PlaylistBox.key('k', Playlist.circleList);
+    PlaylistBox.key('l', Playlist.navigator);
+    PlaylistBox.key('l', Playlist.circleList);
+    PlaylistBox.key('enter', () => {
 
         const { content } = Playlist.sendToQueueWindow();
         Stream.sendToQueueArray(content);
     });
-    playlist.key('q', () => {
+    PlaylistBox.key('q', () => {
 
         Playlist.postFocus();
         Queue.preFocus();
-        queue.focus();
+        QueueBox.focus();
         View.setControlTipsQueue();
         View.render();
     });
@@ -38,11 +38,11 @@ internals.renderView = () => {
         const { index1, index2 } = Queue.changeOrderQueueWindow(key);
         Stream.changeOrderQueueArray(index1, index2);
     };
-    queue.key('a', changeOrder);
-    queue.key('z', changeOrder);
-    queue.key('k', Queue.navigator);
-    queue.key('l', Queue.navigator);
-    queue.key('d', () => {
+    QueueBox.key('a', changeOrder);
+    QueueBox.key('z', changeOrder);
+    QueueBox.key('k', Queue.navigator);
+    QueueBox.key('l', Queue.navigator);
+    QueueBox.key('d', () => {
 
         const { index } = Queue.removeFromQueueWindow();
         if (index) {
@@ -51,11 +51,11 @@ internals.renderView = () => {
         Queue.preFocus();
         View.render();
     });
-    queue.key('p', () => {
+    QueueBox.key('p', () => {
 
         Queue.postFocus();
         Playlist.preFocus();
-        playlist.focus();
+        PlaylistBox.focus();
         View.setControlTipsPlaylist();
         View.render();
     });

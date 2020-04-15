@@ -2,14 +2,14 @@ const NeoBlessed = require('neo-blessed');
 const Utils = require('../utils');
 const KeyListenerFactory = require('./key-listener.factory');
 const {
-    screen,
-    playlist,
-    queue,
-    playing,
-    controls,
-    playlistChildConfig,
-    queueChildConfig,
-    playingChildConfig,
+    Screen,
+    PlaylistBox,
+    QueueBox,
+    NowPlayingBox,
+    ControlsBox,
+    playlistBoxChildConfig,
+    queueBoxChildConfig,
+    playingBoxChildConfig,
     bgPlFocus,
     bgPlPlain,
     bgQuFocus,
@@ -33,12 +33,12 @@ internals.setParentForOrderingFunction = (parent, updateContentFn) =>
             child.top = index - 1;
             child.content = updateContentFn(child.content, index);
         });
-internals.appendToPlaylist = internals.setParentForAppendingFunction(playlist);
-internals.appendToQueue = internals.setParentForAppendingFunction(queue);
-internals.appendToPlaying = internals.setParentForAppendingFunction(playing);
-internals.discardFromQueue = internals.setParentForDiscardingFunction(queue);
+internals.appendToPlaylist = internals.setParentForAppendingFunction(PlaylistBox);
+internals.appendToQueue = internals.setParentForAppendingFunction(QueueBox);
+internals.appendToPlaying = internals.setParentForAppendingFunction(NowPlayingBox);
+internals.discardFromQueue = internals.setParentForDiscardingFunction(QueueBox);
 internals.orderQueue = internals.setParentForOrderingFunction(
-    queue,
+    QueueBox,
     (content, index) => `${index}. ${Utils.discardFirstWord(content)}`
 );
 internals.createChildInit = ({ parent, config, prefix, single = false }) =>
@@ -48,14 +48,14 @@ internals.createChildInit = ({ parent, config, prefix, single = false }) =>
         content: (prefix || parent.children.length + '. ') + content
     });
 internals.createPlaylistChild = internals.createChildInit({
-    parent: playlist,
-    config: playlistChildConfig,
+    parent: PlaylistBox,
+    config: playlistBoxChildConfig,
     prefix: '- '
 });
-internals.createQueueChild = internals.createChildInit({ parent: queue, config: queueChildConfig });
+internals.createQueueChild = internals.createChildInit({ parent: QueueBox, config: queueBoxChildConfig });
 internals.createPlayingChild = internals.createChildInit({
-    parent: playing,
-    config: playingChildConfig,
+    parent: NowPlayingBox,
+    config: playingBoxChildConfig,
     prefix: '>>> ',
     single: true
 });
@@ -74,13 +74,13 @@ exports.createChildAndAppendToPlaying = Utils.pipe(
     internals.appendToPlaying
 );
 exports.playlistKeyListener = KeyListenerFactory({
-    box: playlist,
+    box: PlaylistBox,
     actionFn: Utils.pipe(Utils.pick('content'), Utils.discardFirstWord, exports.createChildAndAppendToQueue),
     bgPlain: bgPlPlain,
     bgFocus: bgPlFocus
 });
 exports.queueKeyListener = KeyListenerFactory({
-    box: queue,
+    box: QueueBox,
     actionFn: ({ index, cb }) => {
 
         internals.discardFromQueue(index);
@@ -90,9 +90,9 @@ exports.queueKeyListener = KeyListenerFactory({
     bgPlain: bgQuPlain,
     bgFocus: bgQuFocus
 });
-exports.setControlTipsPlaylist = () => { controls.content = controlsPlaylist; };
-exports.setControlTipsQueue = () => { controls.content = controlsQueue; };
-exports.render = screen.render.bind(screen);
+exports.setControlTipsPlaylist = () => { ControlsBox.content = controlsPlaylist; };
+exports.setControlTipsQueue = () => { ControlsBox.content = controlsQueue; };
+exports.render = Screen.render.bind(Screen);
 exports.fillPlaylistAndRender = (songs, cb) => {
 
     internals.fillPlaylist(songs);
@@ -101,13 +101,13 @@ exports.fillPlaylistAndRender = (songs, cb) => {
 };
 exports.init = () => {
 
-    screen.append(queue);
-    screen.append(playlist);
-    screen.append(playing);
-    screen.append(controls);
+    Screen.append(QueueBox);
+    Screen.append(PlaylistBox);
+    Screen.append(NowPlayingBox);
+    Screen.append(ControlsBox);
 
-    playlist.focus();
-    screen.render();
+    PlaylistBox.focus();
+    Screen.render();
 
-    return { playlist, queue, playing, controls };
+    return { PlaylistBox, QueueBox, NowPlayingBox, ControlsBox };
 };

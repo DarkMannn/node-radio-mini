@@ -5,55 +5,46 @@ const internals = {};
  * Style config for the 'neo-blessed' library
  */
 
-internals.boxChilCommonConfig = {
+internals.childCommonConfig = {
     width: '100%',
     height: 1,
     left: 0
 };
-internals.playlistChildColors = {
+
+exports.playlistBoxChildConfig = {
+    ...internals.childCommonConfig,
     fg: 'white',
     bg: 'green'
 };
-internals.queueChildColors = {
+exports.queueBoxChildConfig = {
+    ...internals.childCommonConfig,
     fg: 'white',
     bg: 'blue'
 };
-internals.playingChildColors = {
+exports.playingBoxChildConfig = {
+    ...internals.childCommonConfig,
     fg: 'green',
     bg: 'black'
-};
-
-exports.playlistChildConfig = {
-    ...internals.boxChilCommonConfig,
-    ...internals.playlistChildColors
-};
-exports.queueChildConfig = {
-    ...internals.boxChilCommonConfig,
-    ...internals.queueChildColors
-};
-exports.playingChildConfig = {
-    ...internals.boxChilCommonConfig,
-    ...internals.playingChildColors
 };
 
 exports.controlsPlaylist =
     '  q  -  focus queue  |  k - go up\n' +
     'enter - enqueue song |  l - go down\n';
 exports.controlsQueue =
-    'p - focus playlist | k - go up\n' +
-    'd -  dequeue song  | l - go down\n' +
-    'a,z - move song up or down the queue';
+    'a - move song up   | k - go up\n' +
+    'z - move zong down | l - go down\n' +
+    'p - focus playlist | d - dequeue song';
 
 exports.bgPlFocus = 'black';
 exports.bgPlPlain = 'green';
 exports.bgQuFocus = 'black';
 exports.bgQuPlain = 'blue';
 
-exports.screen = NeoBlessed.screen({ smartSCR: true });
-exports.screen.title = 'Node Radio Mini';
-exports.screen.key(['escape', 'C-c'], (ch, key) => process.exit(0));
+exports.Screen = NeoBlessed.screen({ smartSCR: true });
+exports.Screen.title = 'Node Radio Mini';
+exports.Screen.key(['escape', 'C-c'], (ch, key) => process.exit(0));
 
-exports.playlist = NeoBlessed.box({
+exports.PlaylistBox = NeoBlessed.box({
     top: 0,
     left: 0,
     width: '50%',
@@ -72,7 +63,7 @@ exports.playlist = NeoBlessed.box({
     }
 });
 
-exports.queue = NeoBlessed.box({
+exports.QueueBox = NeoBlessed.box({
     top: 0,
     left: '50%',
     width: '50%',
@@ -91,7 +82,7 @@ exports.queue = NeoBlessed.box({
     }
 });
 
-exports.playing = NeoBlessed.box({
+exports.NowPlayingBox = NeoBlessed.box({
     top: '70%',
     left: '50%',
     width: '50%',
@@ -109,7 +100,7 @@ exports.playing = NeoBlessed.box({
     }
 });
 
-exports.controls = NeoBlessed.box({
+exports.ControlsBox = NeoBlessed.box({
     top: '85%',
     left: '50%',
     width: '50%',
