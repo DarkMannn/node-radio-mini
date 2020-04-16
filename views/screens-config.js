@@ -21,7 +21,7 @@ exports.queueBoxChildConfig = {
     fg: 'white',
     bg: 'blue'
 };
-exports.playingBoxChildConfig = {
+exports.nowPlayingBoxChildConfig = {
     ...internals.childCommonConfig,
     fg: 'green',
     bg: 'black'

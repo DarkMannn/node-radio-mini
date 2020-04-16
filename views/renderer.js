@@ -9,7 +9,7 @@ const {
     ControlsBox,
     playlistBoxChildConfig,
     queueBoxChildConfig,
-    playingBoxChildConfig,
+    nowPlayingBoxChildConfig,
     bgPlFocus,
     bgPlPlain,
     bgQuFocus,
@@ -19,59 +19,48 @@ const {
 } = require('./screens-config');
 const internals = {};
 
-internals.setParentForAppendingFunction = parent =>
-    config => parent.append(NeoBlessed.box(config));
-internals.setParentForDiscardingFunction = parent =>
-    index => parent.remove(parent.children[index]);
-internals.setParentForOrderingFunction = (parent, updateContentFn) =>
-    () =>
-        parent.children.forEach((child, index) => {
+internals.appendToPlaylistBox = (config) => PlaylistBox.append(NeoBlessed.box(config));
+internals.appendToQueueBox = (config) => QueueBox.append(NeoBlessed.box(config));
+internals.appendToNowPlayingBox = (config) => NowPlayingBox.append(NeoBlessed.box(config));
 
-            if (index === 0) {
-                return;
-            }
-            child.top = index - 1;
-            child.content = updateContentFn(child.content, index);
-        });
-internals.appendToPlaylist = internals.setParentForAppendingFunction(PlaylistBox);
-internals.appendToQueue = internals.setParentForAppendingFunction(QueueBox);
-internals.appendToPlaying = internals.setParentForAppendingFunction(NowPlayingBox);
-internals.discardFromQueue = internals.setParentForDiscardingFunction(QueueBox);
-internals.orderQueue = internals.setParentForOrderingFunction(
-    QueueBox,
-    (content, index) => `${index}. ${Utils.discardFirstWord(content)}`
-);
-internals.createChildInit = ({ parent, config, prefix, single = false }) =>
-    content => ({
-        ...config,
-        top: single ? 0 : parent.children.length - 1,
-        content: (prefix || parent.children.length + '. ') + content
-    });
-internals.createPlaylistChild = internals.createChildInit({
-    parent: PlaylistBox,
-    config: playlistBoxChildConfig,
-    prefix: '- '
+internals.discardFromQueueBox = (index) => QueueBox.remove(QueueBox.children[index]);
+internals.orderQueueBox = () => QueueBox.children.forEach((child, index) => {
+
+    if (index !== 0) {
+        child.top = index - 1;
+        child.content = `${index}. ${Utils.discardFirstWord(child.content)}`;
+    }
 });
-internals.createQueueChild = internals.createChildInit({ parent: QueueBox, config: queueBoxChildConfig });
-internals.createPlayingChild = internals.createChildInit({
-    parent: NowPlayingBox,
-    config: playingBoxChildConfig,
-    prefix: '>>> ',
-    single: true
+
+internals.createPlaylistBoxChild = (content) => ({
+    ...playlistBoxChildConfig,
+    top: PlaylistBox.children.length - 1,
+    content: `- ${content}`
 });
+internals.createQueueBoxChild = (content) => ({
+    ...queueBoxChildConfig,
+    top: QueueBox.children.length - 1,
+    content: `${QueueBox.children.length}. ${content}`
+});
+internals.createNowPlayingBoxChild = (content) => ({
+    ...nowPlayingBoxChildConfig,
+    top: 0,
+    content: `>>> ${content}`
+});
+
 internals.fillPlaylist = songs => songs.forEach(exports.createChildAndAppendToPlaylist);
 
 exports.createChildAndAppendToPlaylist = Utils.pipe(
-    internals.createPlaylistChild,
-    internals.appendToPlaylist
+    internals.createPlaylistBoxChild,
+    internals.appendToPlaylistBox
 );
 exports.createChildAndAppendToQueue = Utils.pipe(
-    internals.createQueueChild,
-    internals.appendToQueue
+    internals.createQueueBoxChild,
+    internals.appendToQueueBox
 );
 exports.createChildAndAppendToPlaying = Utils.pipe(
-    internals.createPlayingChild,
-    internals.appendToPlaying
+    internals.createNowPlayingBoxChild,
+    internals.appendToNowPlayingBox
 );
 exports.playlistKeyListener = KeyListenerFactory({
     box: PlaylistBox,
@@ -83,8 +72,8 @@ exports.queueKeyListener = KeyListenerFactory({
     box: QueueBox,
     actionFn: ({ index, cb }) => {
 
-        internals.discardFromQueue(index);
-        internals.orderQueue();
+        internals.discardFromQueueBox(index);
+        internals.orderQueueBox();
         cb();
     },
     bgPlain: bgQuPlain,
