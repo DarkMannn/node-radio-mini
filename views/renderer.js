@@ -1,6 +1,6 @@
 const NeoBlessed = require('neo-blessed');
 const Utils = require('../utils');
-const KeyListenerFactory = require('./key-listener.factory');
+const { KeyListenerFactory, KeyListenerClass } = require('./key-listener.factory');
 const {
     Screen,
     PlaylistBox,
@@ -18,6 +18,16 @@ const {
     controlsQueue
 } = require('./screens-config');
 const internals = {};
+
+////////////
+
+internals.boxChildCommonConfig = {
+    width: '100%',
+    height: 1,
+    left: 0
+};
+
+///////////
 
 internals.appendToPlaylistBox = (config) => PlaylistBox.append(NeoBlessed.box(config));
 internals.appendToQueueBox = (config) => QueueBox.append(NeoBlessed.box(config));
@@ -91,12 +101,140 @@ exports.fillPlaylistAndRender = (songs, cb) => {
 exports.init = () => {
 
     Screen.append(QueueBox);
-    Screen.append(PlaylistBox);
+    Screen.append(exports.playlist.box);
     Screen.append(NowPlayingBox);
     Screen.append(ControlsBox);
 
-    PlaylistBox.focus();
+    exports.playlist.box.focus();
     Screen.render();
 
     return { PlaylistBox, QueueBox, NowPlayingBox, ControlsBox };
 };
+
+/////////////////////
+
+class Box {
+
+    constructor() {
+
+        this.render = Screen.render.bind(Screen);
+
+
+        const playlistKeyListener = KeyListenerFactory({
+            box: this.box,
+            actionFn: Utils.pipe(Utils.pick('content'), Utils.discardFirstWord, exports.createChildAndAppendToQueue),
+            bgPlain: bgPlPlain,
+            bgFocus: bgPlFocus
+        });
+        this.navigator = playlistKeyListener.navigator;
+        this.sendToQueueWindow = playlistKeyListener.action;
+        this.preFocus = playlistKeyListener.preFocus;
+        this.postFocus = playlistKeyListener.postFocus;
+        this.circleList = playlistKeyListener.circleList;
+    }
+
+    createBoxChild(content) {
+
+        return NeoBlessed.box({
+            ...this.boxChildConfig,
+            top: this.box.children.length - 1,
+            content: `- ${content}`
+        });
+    }
+
+    createBoxChildAndAppendToBox(content) {
+
+        const boxChild = this.createBoxChild(content);
+        this.box.append(boxChild);
+    }
+
+    fillWithItems(items) {
+
+        for (const item of items) {
+            this.createBoxChildAndAppendToBox(item);
+        }
+    }
+
+    fillWithItemsAndRender(items) {
+
+        this.fillWithItems(items);
+        this.preFocus();
+        this.render();
+    }
+}
+
+class Playlist {
+
+    constructor() {
+
+        this.render = Screen.render.bind(Screen);
+        this.box = NeoBlessed.box({
+            top: 0,
+            left: 0,
+            width: '50%',
+            height: '100%',
+            scrollable: true,
+            label: 'Playlist',
+            border: {
+                type: 'line'
+            },
+            style: {
+                fg: 'white',
+                bg: 'green',
+                border: {
+                    fg: '#f0f0f0'
+                }
+            }
+        });
+
+        this.boxChildConfig = {
+            ...internals.boxChildCommonConfig,
+            fg: 'white',
+            bg: 'green'
+        };
+
+        const playlistKeyListener = new KeyListenerClass({
+            box: this.box,
+            actionFn: Utils.pipe(Utils.pick('content'), Utils.discardFirstWord, exports.createChildAndAppendToQueue),
+            bgPlain: bgPlPlain,
+            bgFocus: bgPlFocus
+        });
+
+        this.navigator = playlistKeyListener.navigator.bind(playlistKeyListener);
+        this.sendToQueueWindow = playlistKeyListener.action.bind(playlistKeyListener);
+        this.preFocus = playlistKeyListener.preFocus.bind(playlistKeyListener);
+        this.postFocus = playlistKeyListener.postFocus.bind(playlistKeyListener);
+        this.circleList = playlistKeyListener.circleList.bind(playlistKeyListener);
+    }
+
+    createBoxChild(content) {
+
+        return NeoBlessed.box({
+            ...this.boxChildConfig,
+            top: this.box.children.length - 1,
+            content: `- ${content}`
+        });
+    }
+
+    createBoxChildAndAppendToBox(content) {
+
+        const boxChild = this.createBoxChild(content);
+        this.box.append(boxChild);
+    }
+
+    fillWithItems(items) {
+
+        for (const item of items) {
+            this.createBoxChildAndAppendToBox(item);
+        }
+    }
+
+    fillWithItemsAndRender(items) {
+
+        this.fillWithItems(items);
+        this.preFocus();
+        this.render();
+    }
+}
+
+exports.playlist = new Playlist();
