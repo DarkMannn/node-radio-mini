@@ -3,8 +3,7 @@ const View = require('./views');
 const Utils = require('./utils');
 const internals = {};
 
-const Playlist = View.playlistKeyListener;
-Playlist.sendToQueueWindow = Playlist.action;
+const { playlist } = View;
 
 const Queue = View.queueKeyListener;
 Queue.removeFromQueueWindow = Queue.action;
@@ -12,21 +11,21 @@ Queue.changeOrderQueueWindow = Queue.changeOrder;
 
 internals.renderView = () => {
 
-    const { PlaylistBox, QueueBox } = View.init();
+    const { QueueBox } = View.init();
     Stream.init();
 
-    PlaylistBox.key('k', Playlist.navigator);
-    PlaylistBox.key('k', Playlist.circleList);
-    PlaylistBox.key('l', Playlist.navigator);
-    PlaylistBox.key('l', Playlist.circleList);
-    PlaylistBox.key('enter', () => {
+    playlist.box.key('k', (event) => playlist.eventHandlers.navigator(event));
+    playlist.box.key('k', (event) => playlist.eventHandlers.circleList(event));
+    playlist.box.key('l', (event) => playlist.eventHandlers.navigator(event));
+    playlist.box.key('l', (event) => playlist.eventHandlers.circleList(event));
+    playlist.box.key('enter', () => {
 
-        const { content } = Playlist.sendToQueueWindow();
+        const { content } = playlist.eventHandlers.sendToQueueWindow();
         Stream.sendToQueueArray(content);
     });
-    PlaylistBox.key('q', () => {
+    playlist.box.key('q', () => {
 
-        Playlist.postFocus();
+        playlist.eventHandlers.postFocus();
         Queue.preFocus();
         QueueBox.focus();
         View.setControlTipsQueue();
@@ -54,8 +53,8 @@ internals.renderView = () => {
     QueueBox.key('p', () => {
 
         Queue.postFocus();
-        Playlist.preFocus();
-        PlaylistBox.focus();
+        playlist.eventHandlers.preFocus();
+        playlist.box.focus();
         View.setControlTipsPlaylist();
         View.render();
     });
@@ -68,7 +67,7 @@ internals.renderView = () => {
         View.render();
     });
 
-    View.fillPlaylistAndRender(Utils.readSongs(), Playlist.preFocus);
+    playlist.fillWithItemsAndRender(Utils.readSongs());
 };
 
 exports.startEngine = () => {

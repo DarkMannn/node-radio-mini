@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-require('dotenv').config();
+require('dotenv').config({ path: `${__dirname}/.env` });
 
 const Hapi = require('@hapi/hapi');
 const StaticFilePlugin = require('@hapi/inert');
