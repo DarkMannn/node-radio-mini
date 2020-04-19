@@ -1,77 +1,91 @@
 const Stream = require('./streams');
 const View = require('./views');
 const Utils = require('./utils');
-const internals = {};
+const { keys } = require('./config');
+const { playlist, queue, controls, nowPlaying } = View;
 
-const { playlist } = View;
-
-const Queue = View.queueKeyListener;
-Queue.removeFromQueueWindow = Queue.action;
-Queue.changeOrderQueueWindow = Queue.changeOrder;
-
-internals.renderView = () => {
-
-    const { QueueBox } = View.init();
-    Stream.init();
-
-    playlist.box.key('k', (event) => playlist.eventHandlers.navigator(event));
-    playlist.box.key('k', (event) => playlist.eventHandlers.circleList(event));
-    playlist.box.key('l', (event) => playlist.eventHandlers.navigator(event));
-    playlist.box.key('l', (event) => playlist.eventHandlers.circleList(event));
-    playlist.box.key('enter', () => {
-
-        const { content } = playlist.eventHandlers.sendToQueueWindow();
-        Stream.sendToQueueArray(content);
+const _addListenersForViewAndStreamLayers = () => {
+    
+    playlist.box.key(keys.SCROLL_UP, (key) => playlist.navigator(key));
+    playlist.box.key(keys.SCROLL_UP, (key) => {
+        
+        playlist.circleList(key);
+        View.render();
     });
-    playlist.box.key('q', () => {
+    playlist.box.key(keys.SCROLL_DOWN, (key) => playlist.navigator(key));
+    playlist.box.key(keys.SCROLL_DOWN, (key) => {
+        
+        playlist.circleList(key);
+        View.render();
+    });
+    playlist.box.key(keys.QUEUE_ADD, () => {
 
-        playlist.eventHandlers.postFocus();
-        Queue.preFocus();
-        QueueBox.focus();
-        View.setControlTipsQueue();
+        const focusedSong = playlist.getFocusedSong();
+        const formattedContent = Utils.discardFirstWord(focusedSong);
+        queue.createBoxChildAndAppendToBox(formattedContent);
+        View.render();
+        
+        Stream.sendToQueueArray(focusedSong);
+    });
+    playlist.box.key(keys.FOCUS_QUEUE, () => {
+
+        playlist.postFocus();
+        queue.preFocus();
+        queue.box.focus();
+        controls.setQueueTips();
         View.render();
     });
 
     const changeOrder = key => {
 
-        const { index1, index2 } = Queue.changeOrderQueueWindow(key);
+        const { index1, index2 } = queue.changeOrderQueueWindow(key);
+        View.render();
         Stream.changeOrderQueueArray(index1, index2);
     };
-    QueueBox.key('a', changeOrder);
-    QueueBox.key('z', changeOrder);
-    QueueBox.key('k', Queue.navigator);
-    QueueBox.key('l', Queue.navigator);
-    QueueBox.key('d', () => {
+    queue.box.key(keys.MOVE_UP, changeOrder);
+    queue.box.key(keys.MOVE_DOWN, changeOrder);
+    queue.box.key(keys.SCROLL_UP, (key) => {
+    
+        queue.navigator(key);
+        View.render();
+    });
+    queue.box.key(keys.SCROLL_DOWN, (key) => {
+        
+        queue.navigator(key);
+        View.render();
+    });
+    queue.box.key(keys.QUEUE_REMOVE, () => {
 
-        const { index } = Queue.removeFromQueueWindow();
+        const { index } = queue.removeFromQueueWindow();
         if (index) {
             Stream.removeFromQueueArray(index);
         }
-        Queue.preFocus();
+        queue.preFocus();
         View.render();
     });
-    QueueBox.key('p', () => {
+    queue.box.key(keys.FOCUS_PLAYLIST, () => {
 
-        Queue.postFocus();
-        playlist.eventHandlers.preFocus();
+        queue.postFocus();
+        playlist.preFocus();
         playlist.box.focus();
-        View.setControlTipsPlaylist();
+        controls.setPlaylistTips();
         View.render();
     });
 
     Stream.radioEvents.on('play', (song) => {
 
-        Queue.removeFromQueueWindow({ fromTop: true });
-        Queue.preFocus();
-        View.createChildAndAppendToPlaying(song);
+        queue.removeFromQueueWindow({ fromTop: true });
+        queue.preFocus();
+        nowPlaying.createBoxChildAndAppendToBox(song);
         View.render();
     });
-
-    playlist.fillWithItemsAndRender(Utils.readSongs());
 };
 
-exports.startEngine = () => {
+exports.start = () => {
 
-    internals.renderView();
+    View.init();
+    Stream.init();
+    _addListenersForViewAndStreamLayers();
+    View.firstRender();
     Stream.startStreaming();
 };

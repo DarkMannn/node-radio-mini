@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-require('dotenv').config({ path: `${__dirname}/.env` });
-
+require('./config');
 const Hapi = require('@hapi/hapi');
 const StaticFilePlugin = require('@hapi/inert');
 const Routes = require('./routes');
@@ -19,7 +18,7 @@ void async function startApp() {
         await server.register(StaticFilePlugin);
         await server.register(Routes);
 
-        Engine.startEngine();
+        Engine.start();
         await server.start();
         console.log(`Server running at: ${server.info.uri}`);
     }
