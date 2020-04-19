@@ -1,7 +1,7 @@
 const NeoBlessed = require('neo-blessed');
 const { keys }  = require('../config');
 
-class FocusIndexer {
+class _FocusIndexer {
 
     constructor({ getNavigationLimit }) {
         this._index = 1;
@@ -26,7 +26,6 @@ class FocusIndexer {
 class TerminalBox {
 
     constructor(config) {
-
         this.box = NeoBlessed.box(config);
     }
 }
@@ -36,15 +35,15 @@ class TerminalItemBox extends TerminalBox {
     constructor({
         config,
         childConfig,
-        bgPlain,
+        bgBlur,
         bgFocus
     }) {
 
         super(config);
         this._childConfig = childConfig;
-        this._bgPlain = bgPlain;
+        this._bgBlur = bgBlur;
         this._bgFocus = bgFocus;
-        this._focusIndexer = new FocusIndexer({
+        this._focusIndexer = new _FocusIndexer({
             getNavigationLimit: this._getNavigationLimit.bind(this)
         });
     }
@@ -62,22 +61,22 @@ class TerminalItemBox extends TerminalBox {
     }
 
     _setActiveChildColor(color) {
-
         const activeChild = this.box.children[this._focusIndexer.get()];
         if (activeChild) {
             activeChild.style.bg = color;
         }
     }
 
-    preFocus() {
+    focus() {
         this._setActiveChildColor(this._bgFocus);
+        this.box.focus();
     }
 
-    postFocus() {
-        this._setActiveChildColor(this._bgPlain);
+    blur() {
+        this._setActiveChildColor(this._bgBlur);
     }
 
-    navigator(key) { 
+    scroll(scrollKey) { 
         
         if (this.box.children.length === 1) {
             return;
@@ -86,17 +85,17 @@ class TerminalItemBox extends TerminalBox {
         const unfocusedIndex = this._focusIndexer.get();
         const unfocusedChild = this.box.children[unfocusedIndex];
 
-        if (key === keys.SCROLL_UP) {
+        if (scrollKey === keys.SCROLL_UP) {
             this._focusIndexer.decr();
         }
-        else if (key === keys.SCROLL_DOWN) {
+        else if (scrollKey === keys.SCROLL_DOWN) {
             this._focusIndexer.incr();
         }
 
         const focusedIndex = this._focusIndexer.get();
         const focusedChild = this.box.children[focusedIndex];
 
-        unfocusedChild.style.bg = this._bgPlain;
+        unfocusedChild.style.bg = this._bgBlur;
         focusedChild.style.bg = this._bgFocus;
     }
 
@@ -104,8 +103,7 @@ class TerminalItemBox extends TerminalBox {
         throw new Error('_createBoxChild() method not implemented');
     }
 
-    createBoxChildAndAppendToBox(content) {
-
+    createBoxChildAndAppend(content) {
         const boxChild = this._createBoxChild(content);
         this.box.append(boxChild);
     }

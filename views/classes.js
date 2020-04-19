@@ -33,13 +33,8 @@ class _ScrollRememberer {
 class Playlist extends AbstractClasses.TerminalItemBox {
 
     constructor(params) {
-
         super(params);
         this._scrollRememberer = new _ScrollRememberer();
-    }
-
-    _doChildrenOverflow() {
-        return this._getHeight() < this._getChildrenLength();
     }
 
     _createBoxChild(content) {
@@ -52,16 +47,14 @@ class Playlist extends AbstractClasses.TerminalItemBox {
     }
 
     _fillWithItems(items) {
-
         for (const item of items) {
-            this.createBoxChildAndAppendToBox(item);
+            this.createBoxChildAndAppend(item);
         }
     }
 
     fillWithItemsAndRender(items) {
-
         this._fillWithItems(items);
-        this.preFocus();
+        this.focus();
     }
 
     getFocusedSong() {
@@ -72,7 +65,11 @@ class Playlist extends AbstractClasses.TerminalItemBox {
         return content;
     }
 
-    circleList(key) {
+    _doChildrenOverflow() {
+        return this._getHeight() < this._getChildrenLength();
+    }
+
+    _circleList(key) {
 
         if (this.box.children.length === 1) {
             return;
@@ -110,6 +107,11 @@ class Playlist extends AbstractClasses.TerminalItemBox {
             this._scrollRememberer.stopScroll();
         }
     }
+
+    scroll(scrollKey) {
+        super.scroll(scrollKey);
+        this._circleList(scrollKey);
+    }
 }
 
 class Queue extends AbstractClasses.TerminalItemBox {
@@ -128,7 +130,6 @@ class Queue extends AbstractClasses.TerminalItemBox {
     }
 
     _orderBoxChildren() {
-        
         this.box.children.forEach((child, index) => {
 
             if (index !== 0) {
@@ -174,9 +175,12 @@ class Queue extends AbstractClasses.TerminalItemBox {
         const index2 = this._focusIndexer.get();
         const child2 = this.box.children[index2];
 
-        child1.style.bg = this._bgPlain;
+        child1.style.bg = this._bgBlur;
         child2.style.bg = this._bgFocus;
-        [child1.content, child2.content] = [
+        [
+            child1.content,
+            child2.content
+        ] = [
             `${Utils.getFirstWord(child1.content)} ${Utils.discardFirstWord(child2.content)}`,
             `${Utils.getFirstWord(child2.content)} ${Utils.discardFirstWord(child1.content)}`,
         ];
@@ -200,20 +204,17 @@ class NowPlaying extends AbstractClasses.TerminalItemBox {
 class Controls extends AbstractClasses.TerminalBox {
 
     constructor(config) {
-
         super(config);
         this.setPlaylistTips();
     }
 
     setPlaylistTips() {
-        
         this.box.content = 
             ` ${keys.FOCUS_QUEUE}  -  focus queue  |  ${keys.SCROLL_UP} - go up\n` +
-            `${keys.QUEUE_ADD} - enqueue song | ${keys.SCROLL_DOWN} - go down\n`;
+            ` ${keys.QUEUE_ADD} - enqueue song | ${keys.SCROLL_DOWN} - go down\n`;
     }
 
     setQueueTips() {
-        
         this.box.content = 
             ` ${keys.MOVE_UP} - move song up   | ${keys.SCROLL_UP} - go up\n` +
             ` ${keys.MOVE_DOWN} - move zong down | ${keys.SCROLL_DOWN} - go down\n` +

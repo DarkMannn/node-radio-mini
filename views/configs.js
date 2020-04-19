@@ -1,4 +1,8 @@
-const boxChildCommonConfig = {
+const commonConfig = {
+    border: { type: 'line' }
+};
+
+const childCommonConfig = {
     width: '100%',
     height: 1,
     left: 0
@@ -7,17 +11,15 @@ const boxChildCommonConfig = {
 const Configs = {
     playlist: {
         bgFocus: 'black',
-        bgPlain: 'green',
+        bgBlur: 'green',
         config: {
+            ...commonConfig,
             top: 0,
             left: 0,
             width: '50%',
             height: '100%',
             scrollable: true,
             label: 'Playlist',
-            border: {
-                type: 'line'
-            },
             style: {
                 fg: 'white',
                 bg: 'green',
@@ -27,24 +29,22 @@ const Configs = {
             }
         },
         childConfig: {
-            ...boxChildCommonConfig,
+            ...childCommonConfig,
             fg: 'white',
             bg: 'green'
         }
     },
     queue: {
         bgFocus: 'black',
-        bgPlain: 'blue',
+        bgBlur: 'blue',
         config: {
+            ...commonConfig,
             top: 0,
             left: '50%',
             width: '50%',
             height: '70%',
             scrollable: true,
             label: 'Queue',
-            border: {
-                type: 'line'
-            },
             style: {
                 fg: 'white',
                 bg: 'blue',
@@ -54,21 +54,19 @@ const Configs = {
             }
         },
         childConfig: {
-            ...boxChildCommonConfig,
+            ...childCommonConfig,
             fg: 'white',
             bg: 'blue'
         }
     },
     nowPlaying: {
         config: {
+            ...commonConfig,
             top: '70%',
             left: '50%',
             width: '50%',
             height: 3,
             label: 'Now Playing',
-            border: {
-                type: 'line'
-            },
             style: {
                 fg: 'white',
                 bg: 'black',
@@ -78,22 +76,20 @@ const Configs = {
             }
         },
         childConfig: {
-            ...boxChildCommonConfig,
+            ...childCommonConfig,
             fg: 'green',
             bg: 'black'
         }
     },
     controls: {
         config: {
+            ...commonConfig,
             top: '85%',
             left: '50%',
             width: '50%',
             height: 5,
             scrollable: true,
             label: 'Controls',
-            border: {
-                type: 'line'
-            },
             style: {
                 fg: 'grey',
                 bg: 'black',

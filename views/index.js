@@ -12,14 +12,14 @@ exports.render = screen.render.bind(screen);
 exports.playlist = new Classes.Playlist({
     config: Configs.playlist.config,
     childConfig: Configs.playlist.childConfig,
-    bgPlain: Configs.playlist.bgPlain,
+    bgBlur: Configs.playlist.bgBlur,
     bgFocus: Configs.playlist.bgFocus
 });
 
 exports.queue = new Classes.Queue({
     config: Configs.queue.config,
     childConfig: Configs.queue.childConfig,
-    bgPlain: Configs.queue.bgPlain,
+    bgBlur: Configs.queue.bgBlur,
     bgFocus: Configs.queue.bgFocus
 });
 
@@ -41,6 +41,5 @@ exports.init = () => {
 exports.firstRender = () => {
 
     exports.playlist.fillWithItemsAndRender(Utils.readSongs());
-    exports.playlist.box.focus();
     exports.render();
 };
