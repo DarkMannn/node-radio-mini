@@ -1,4 +1,4 @@
-const Queue = require('../views/queue');
+const { queue } = require('../views');
 
 const plugin = {
 
@@ -23,7 +23,7 @@ const plugin = {
         server.route({
             method: 'GET',
             path: '/stream',
-            handler: (_, h) => h.response(Queue.makeResponseStream()).type('audio/mpeg')
+            handler: (_, h) => h.response(queue.makeResponseStream()).type('audio/mpeg')
         });
 
     }

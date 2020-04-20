@@ -1,5 +1,5 @@
 const Path = require('path');
-require('dotenv').config({ path: Path.normalize(__dirname, '../public') });
+require('dotenv').config({ path: Path.join(__dirname, '../.env') });
 
 exports.keys = {
     SCROLL_UP: process.env.SCROLL_UP || 'i',

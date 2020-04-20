@@ -6,7 +6,7 @@ const { keys }  = require('../config');
 const Fs = require('fs');
 const Path = require('path');
 const EventEmitter = require('events');
-const Throttle = require('throttle-stream');
+const Throttle = require('throttle');
 const { ffprobeSync } = require('@dropb/ffprobe');
 const { PassThrough } = require('stream');
 const Speaker = require('speaker');
@@ -37,8 +37,8 @@ class Queue extends AbstractClasses.TerminalItemBox {
         }
     }
 
-    _makeThrottle(bytes) {
-        return new Throttle({ bytes, interval: 1000 }).on('data', (chunk) => this._onData(chunk));
+    _makeThrottle(bitRate) {
+        return new Throttle(bitRate / 8).on('data', (chunk) => this._onData(chunk));
     }
 
     _repeatLoop(song, bitRate) {
@@ -62,7 +62,9 @@ class Queue extends AbstractClasses.TerminalItemBox {
     }
 
     init() {
-        this._sinks.push(Queue.makeHostSink());
+        if (process.env.SPEAKER_OUTPUT === 'true') {
+            this._sinks.push(Queue.makeHostSink());
+        }
         this._songs.unshift(Utils.readSong());
     }
 

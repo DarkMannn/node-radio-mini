@@ -19,7 +19,9 @@ class _FocusIndexer {
     }
 
     decr() {
-        if (this._index > 1) this._index--;
+        if (this._index > 1) {
+            this._index--;
+        }
     }
 }
 
