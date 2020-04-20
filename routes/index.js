@@ -1,9 +1,7 @@
 const { queue } = require('../engine');
 
 const plugin = {
-
     name: 'streamServer',
-
     register: async (server) => {
 
         server.route({
@@ -23,9 +21,26 @@ const plugin = {
         server.route({
             method: 'GET',
             path: '/stream',
-            handler: (_, h) => h.response(queue.makeResponseStream()).type('audio/mpeg')
+            handler: (request, h) => {
+                
+                const { id, responseSink } = queue.makeResponseSink();
+                request.app.sinkId = id;
+                return h.response(responseSink).type('audio/mpeg');
+            },
+            options: {
+                ext: {
+                    onPreResponse: {
+                        method: (request, h) => {
+                            
+                            request.events.once('disconnect', () => {
+                                queue.removeResponseSink(request.app.sinkId);
+                            });
+                            return h.continue;
+                        }
+                    }
+                }
+            }
         });
-
     }
 };
 

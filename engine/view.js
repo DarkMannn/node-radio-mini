@@ -14,9 +14,9 @@ class View {
     }
 
     appendBoxes(boxes) {
-        boxes.forEach((box) => {
+        for (const box of boxes) {
             this._screen.append(box);
-        });
+        }
     }
 
     render() {

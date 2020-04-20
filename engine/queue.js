@@ -24,7 +24,7 @@ class Queue extends AbstractClasses.TerminalItemBox {
 
     constructor(params) {
         super(params);
-        this._sinks = []; // list of active sinks/writables
+        this._sinks = new Map(); // map of active sinks/writables
         this._songs = []; // list of queued up songs
         this._currentSong = null;
         this.stream = new EventEmitter();
@@ -40,20 +40,24 @@ class Queue extends AbstractClasses.TerminalItemBox {
     makeSpeakerSink() {
         const speakerSink = new Lame.Decoder();
         speakerSink.pipe(new Speaker());
-        this._sinks.push(speakerSink);
-        return speakerSink;
+        this._sinks.set(Utils.generateRandomId, speakerSink);
     }
 
     makeResponseSink() {
-        const responseSink = new PassThrough();
-        this._sinks.push(responseSink);
-        return responseSink;
+        const id = Utils.generateRandomId();
+        const responseSink = PassThrough();
+        this._sinks.set(id, responseSink);
+        return { id, responseSink };
+    }
+
+    removeResponseSink(id) {
+        this._sinks.delete(id);
     }
 
     _broadcastToEverySink(chunk) {
-        this._sinks.forEach(sink => {
+        for (const [, sink] of this._sinks) {
             sink.write(chunk);
-        });
+        }
     }
 
     _getBitRate(song) {
