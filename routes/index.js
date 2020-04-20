@@ -1,4 +1,4 @@
-const { queue } = require('../views');
+const { queue } = require('../engine');
 
 const plugin = {
 

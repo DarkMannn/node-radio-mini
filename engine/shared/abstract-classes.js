@@ -1,5 +1,5 @@
 const NeoBlessed = require('neo-blessed');
-const { keys }  = require('../config');
+const { keys }  = require('../../config');
 
 class _FocusIndexer {
 

@@ -1,16 +1,17 @@
-const NeoBlessed = require('neo-blessed');
-const AbstractClasses = require('./abstract-classes');
-const Utils = require('../utils');
-const { keys }  = require('../config');
-
 const Fs = require('fs');
 const Path = require('path');
 const EventEmitter = require('events');
-const Throttle = require('throttle');
-const { ffprobeSync } = require('@dropb/ffprobe');
 const { PassThrough } = require('stream');
+
+const Throttle = require('throttle');
+const NeoBlessed = require('neo-blessed');
+const { ffprobeSync } = require('@dropb/ffprobe');
 const Speaker = require('speaker');
 const Lame = require('lame');
+
+const AbstractClasses = require('./shared/abstract-classes');
+const Utils = require('../utils');
+const { keys }  = require('../config');
 
 class Queue extends AbstractClasses.TerminalItemBox {
 

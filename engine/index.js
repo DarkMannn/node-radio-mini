@@ -1,10 +1,33 @@
-const View = require('./views');
-const Utils = require('./utils');
-const { keys } = require('./config');
+const { keys } = require('../config');
+const Utils = require('../utils');
+const Configs = require('./shared/configs');
 
-const { playlist, queue, controls, nowPlaying } = View;
+const View = require('./view');
+const Playlist = require('./playlist');
+const Queue = require('./queue');
+const NowPlaying = require('./now-playing');
+const Controls = require('./controls');
 
-const _addListenersForViewAndStreamLayers = () => {
+const view = new View();
+const playlist = new Playlist({
+    config: Configs.playlist.config,
+    childConfig: Configs.playlist.childConfig,
+    bgBlur: Configs.playlist.bgBlur,
+    bgFocus: Configs.playlist.bgFocus
+});
+const queue = new Queue({
+    config: Configs.queue.config,
+    childConfig: Configs.queue.childConfig,
+    bgBlur: Configs.queue.bgBlur,
+    bgFocus: Configs.queue.bgFocus
+});
+const nowPlaying = new NowPlaying({
+    config: Configs.nowPlaying.config,
+    childConfig: Configs.nowPlaying.childConfig
+});
+const controls = new Controls(Configs.controls.config);
+
+const _addPlaylistAndQueueListeners = () => {
     
     /**
      * listeners for the playlist box
@@ -12,7 +35,7 @@ const _addListenersForViewAndStreamLayers = () => {
     const playlistOnScroll = (scrollKey) => {
        
         playlist.scroll(scrollKey);
-        View.render();
+        view.render();
     };
     playlist.box.key(keys.SCROLL_UP, playlistOnScroll);
     playlist.box.key(keys.SCROLL_DOWN, playlistOnScroll);
@@ -22,7 +45,7 @@ const _addListenersForViewAndStreamLayers = () => {
         const focusedSong = playlist.getFocusedSong();
         const formattedSong = Utils.discardFirstWord(focusedSong);
         queue.createAndAppendToQueue(formattedSong);
-        View.render();
+        view.render();
     });
 
     playlist.box.key(keys.FOCUS_QUEUE, () => {
@@ -30,7 +53,7 @@ const _addListenersForViewAndStreamLayers = () => {
         playlist.blur();
         queue.focus();
         controls.setQueueTips();
-        View.render();
+        view.render();
     });
 
     /**
@@ -39,7 +62,7 @@ const _addListenersForViewAndStreamLayers = () => {
     const queueOnScroll = (scrollKey) => {
     
         queue.scroll(scrollKey);
-        View.render();
+        view.render();
     };
     queue.box.key(keys.SCROLL_UP, queueOnScroll);
     queue.box.key(keys.SCROLL_DOWN, queueOnScroll);
@@ -47,7 +70,7 @@ const _addListenersForViewAndStreamLayers = () => {
     const queueOnMove = (key) => {
 
         queue.changeOrderQueue(key);
-        View.render();
+        view.render();
     };
     queue.box.key(keys.MOVE_UP, queueOnMove);
     queue.box.key(keys.MOVE_DOWN, queueOnMove);
@@ -56,7 +79,7 @@ const _addListenersForViewAndStreamLayers = () => {
 
         queue.removeFromQueue();
         queue.focus();
-        View.render();
+        view.render();
     });
 
     queue.box.key(keys.FOCUS_PLAYLIST, () => {
@@ -64,25 +87,29 @@ const _addListenersForViewAndStreamLayers = () => {
         queue.blur();
         playlist.focus();
         controls.setPlaylistTips();
-        View.render();
+        view.render();
     });
 
     /**
-     * listeners for the Stream events
+     * listeners for the queue stream events
      */
     queue.streamEvents.on('play', (song) => {
 
         playlist.focus();
         nowPlaying.createBoxChildAndAppend(song);
-        View.render();
+        view.render();
     });
 };
 
 exports.start = () => {
 
-    View.init();
+    _addPlaylistAndQueueListeners();
+    playlist.fillWithItems(Utils.readSongs());
+    view.appendBoxes([playlist.box, queue.box, nowPlaying.box, controls.box]);
+    view.render();
     queue.init();
-    _addListenersForViewAndStreamLayers();
-    View.firstRender();
     queue.startStreaming();
 };
+
+exports.queue = queue;
+exports.playlist = playlist;

@@ -5,7 +5,7 @@ const Hapi = require('@hapi/hapi');
 const StaticFilePlugin = require('@hapi/inert');
 const Path = require('path');
 const Routes = require('./routes');
-const Engine = require('./engine.js');
+const Engine = require('./engine');
 
 void async function startApp() {
 
