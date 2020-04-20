@@ -1,7 +1,7 @@
-const Stream = require('./streams');
 const View = require('./views');
 const Utils = require('./utils');
 const { keys } = require('./config');
+
 const { playlist, queue, controls, nowPlaying } = View;
 
 const _addListenersForViewAndStreamLayers = () => {
@@ -21,9 +21,8 @@ const _addListenersForViewAndStreamLayers = () => {
 
         const focusedSong = playlist.getFocusedSong();
         const formattedSong = Utils.discardFirstWord(focusedSong);
-        queue.createBoxChildAndAppend(formattedSong);
+        queue.createAndAppendToQueue(formattedSong);
         View.render();
-        Stream.sendToQueueArray(focusedSong);
     });
 
     playlist.box.key(keys.FOCUS_QUEUE, () => {
@@ -47,19 +46,15 @@ const _addListenersForViewAndStreamLayers = () => {
 
     const queueOnMove = (key) => {
 
-        const { index1, index2 } = queue.changeOrderQueueWindow(key);
+        queue.changeOrderQueue(key);
         View.render();
-        Stream.changeOrderQueueArray(index1, index2);
     };
     queue.box.key(keys.MOVE_UP, queueOnMove);
     queue.box.key(keys.MOVE_DOWN, queueOnMove);
 
     queue.box.key(keys.QUEUE_REMOVE, () => {
 
-        const { index } = queue.removeFromQueueWindow();
-        if (index) {
-            Stream.removeFromQueueArray(index);
-        }
+        queue.removeFromQueue();
         queue.focus();
         View.render();
     });
@@ -75,9 +70,8 @@ const _addListenersForViewAndStreamLayers = () => {
     /**
      * listeners for the Stream events
      */
-    Stream.radioEvents.on('play', (song) => {
+    queue.streamEvents.on('play', (song) => {
 
-        queue.removeFromQueueWindow({ fromTop: true });
         playlist.focus();
         nowPlaying.createBoxChildAndAppend(song);
         View.render();
@@ -87,8 +81,8 @@ const _addListenersForViewAndStreamLayers = () => {
 exports.start = () => {
 
     View.init();
-    Stream.init();
+    queue.init();
     _addListenersForViewAndStreamLayers();
     View.firstRender();
-    Stream.startStreaming();
+    queue.startStreaming();
 };

@@ -3,6 +3,7 @@
 require('./config');
 const Hapi = require('@hapi/hapi');
 const StaticFilePlugin = require('@hapi/inert');
+const Path = require('path');
 const Routes = require('./routes');
 const Engine = require('./engine.js');
 
@@ -13,7 +14,7 @@ void async function startApp() {
             port: process.env.PORT || 8080,
             host: process.env.HOST || 'localhost',
             compression: false,
-            routes: { files: { relativeTo: `${__dirname}/public` } }
+            routes: { files: { relativeTo: Path.join(__dirname, 'public') } }
         });
         await server.register(StaticFilePlugin);
         await server.register(Routes);
@@ -24,6 +25,7 @@ void async function startApp() {
     }
     catch (err) {
         console.log(`Server errored with: ${err}`);
+        console.error(err.stack);
         process.exit(1);
     }
 }();

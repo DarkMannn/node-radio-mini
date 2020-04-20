@@ -2,6 +2,7 @@ const NeoBlessed = require('neo-blessed');
 const Configs = require('./configs');
 const Classes = require('./classes');
 const Utils = require('../utils');
+const Queue = require('./queue');
 
 const screen = NeoBlessed.screen({ smartSCR: true });
 screen.title = 'Node Radio Mini';
@@ -16,7 +17,7 @@ exports.playlist = new Classes.Playlist({
     bgFocus: Configs.playlist.bgFocus
 });
 
-exports.queue = new Classes.Queue({
+exports.queue = new Queue({
     config: Configs.queue.config,
     childConfig: Configs.queue.childConfig,
     bgBlur: Configs.queue.bgBlur,
