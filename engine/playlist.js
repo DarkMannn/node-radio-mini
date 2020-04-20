@@ -2,39 +2,11 @@ const NeoBlessed = require('neo-blessed');
 const AbstractClasses = require('./shared/abstract-classes');
 const { keys }  = require('../config');
 
-class _ScrollRememberer {
-
-    constructor() {
-        this._borderHitAndShouldScroll = null;
-    }
-
-    shouldScrollUp() {
-        return this._borderHitAndShouldScroll === 'up';
-    }
-
-    shouldScrollDown() {
-        return this._borderHitAndShouldScroll === 'down';
-    }
-
-    startScrollUp() {
-        this._borderHitAndShouldScroll = 'up';
-    }
-
-    startScrollDown() {
-        this._borderHitAndShouldScroll = 'down';
-    }
-
-    stopScroll() {
-        this._borderHitAndShouldScroll = null;
-    }
-}
-
+/**
+ * Class in charge of:
+ * - view layer for the list of available songs
+ */
 class Playlist extends AbstractClasses.TerminalItemBox {
-
-    constructor(params) {
-        super(params);
-        this._scrollRememberer = new _ScrollRememberer();
-    }
 
     _createBoxChild(content) {
 
@@ -53,59 +25,50 @@ class Playlist extends AbstractClasses.TerminalItemBox {
     }
 
     getFocusedSong() {
-
-        const index = this._focusIndexer.get();
-        const child = this.box.children[index];
-        const content = child && child.content;
-        return content;
+        const child = this.box.children[this._focusIndexer.get()];
+        return child && child.content;
     }
 
     _doChildrenOverflow() {
-        return this._getHeight() < this._getChildrenLength();
+        return this._getHeight() < this.box.children.length;
+    }
+
+    _circleChildrenUp() {
+        const temp = this.box.children[this.box.children.length - 1].content;
+        this.box.children.reduceRight((lowerChild, upperChild) => {
+
+            lowerChild.content = upperChild.content;
+            return upperChild;
+        });
+        this.box.children[1].content = temp;
+    }
+
+    _circleChildrenDown() {
+        const temp = this.box.children[1].content;
+        this.box.children.reduce((upperChild, lowerChild, index) => {
+
+            if (index > 1) {
+                upperChild.content = lowerChild.content;
+            }
+            return lowerChild;
+        });
+        this.box.children[this.box.children.length - 1].content = temp;
     }
 
     _circleList(key) {
-
-        if (this.box.children.length === 1) {
-            return;
+        if (this._focusIndexer.get() === 1 && key === keys.SCROLL_UP) {
+            this._circleChildrenUp();
         }
-
-        if (key === keys.SCROLL_UP && this._scrollRememberer.shouldScrollUp()) {
-            const temp = this.box.children[this.box.children.length - 1].content;
-            this.box.children.reduceRight((lowerChild, upperChild) => {
-
-                lowerChild.content = upperChild.content;
-                return upperChild;
-            });
-            this.box.children[1].content = temp;
-        }
-        else if (key === keys.SCROLL_DOWN && this._scrollRememberer.shouldScrollDown()) {
-            const temp = this.box.children[1].content;
-            this.box.children.reduce((upperChild, lowerChild, index) => {
-
-                if (index > 1) {
-                    upperChild.content = lowerChild.content;
-                }
-                return lowerChild;
-            });
-            this.box.children[this.box.children.length - 1].content = temp;
-        }
-        else if (
-            (this._focusIndexer.get() === 1 && this._doChildrenOverflow()) ||
-            this._focusIndexer.get() === this._getHeight()
-        ) {
-            key === keys.SCROLL_UP
-                ? this._scrollRememberer.startScrollUp()
-                : this._scrollRememberer.startScrollDown();
-        }
-        else {
-            this._scrollRememberer.stopScroll();
+        else if (this._focusIndexer.get() === this._getHeight() && key === keys.SCROLL_DOWN) {
+            this._circleChildrenDown();
         }
     }
 
     scroll(scrollKey) {
+        if (this.box.children.length > 2 && this._doChildrenOverflow()) {
+            this._circleList(scrollKey); 
+        }
         super.scroll(scrollKey);
-        this._circleList(scrollKey);
     }
 }
 

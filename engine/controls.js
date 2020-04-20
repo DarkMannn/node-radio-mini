@@ -1,6 +1,10 @@
 const AbstractClasses = require('./shared/abstract-classes');
 const { keys }  = require('../config');
 
+/**
+ * Class in charge of:
+ * - a view layer for the available controls/keys
+ */
 class Controls extends AbstractClasses.TerminalBox {
 
     constructor(config) {

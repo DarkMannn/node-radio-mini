@@ -1,5 +1,8 @@
 const NeoBlessed = require('neo-blessed');
 
+/**
+ * Class that wraps the neo-blessed screen i.e. the entire view layer
+ */
 class View {
 
     constructor() {

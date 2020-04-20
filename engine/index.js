@@ -30,7 +30,7 @@ const controls = new Controls(Configs.controls.config);
 const _addPlaylistAndQueueListeners = () => {
     
     /**
-     * listeners for the playlist box
+     * listeners for the playlist box (playlist's view layer events)
      */
     const playlistOnScroll = (scrollKey) => {
        
@@ -57,7 +57,7 @@ const _addPlaylistAndQueueListeners = () => {
     });
 
     /**
-     * listeners for the queue box
+     * listeners for the queue box (queue's view layer events)
      */
     const queueOnScroll = (scrollKey) => {
     
@@ -91,9 +91,9 @@ const _addPlaylistAndQueueListeners = () => {
     });
 
     /**
-     * listeners for the queue stream events
+     * listeners for the queue streams (queue's stream events)
      */
-    queue.streamEvents.on('play', (song) => {
+    queue.stream.on('play', (song) => {
 
         playlist.focus();
         nowPlaying.createBoxChildAndAppend(song);

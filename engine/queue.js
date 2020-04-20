@@ -13,60 +13,78 @@ const AbstractClasses = require('./shared/abstract-classes');
 const Utils = require('../utils');
 const { keys }  = require('../config');
 
+/**
+ * Class in charge of:
+ * 1. A view layer for the queued up songs
+ *       - 'this.box.children' contains view layer for the queued up songs
+ * 2. A stream layer for the streaming of the queued up songs
+ *       - 'this_songs' contains songs for the streaming
+ */
 class Queue extends AbstractClasses.TerminalItemBox {
 
     constructor(params) {
         super(params);
-        this._sinks = [];
-        this._songs = [];
-        this.streamEvents = new EventEmitter();
-    }
-
-    static makeHostSink() {
-        const hostSink = new Lame.Decoder();
-        hostSink.pipe(new Speaker());
-        return hostSink;
-    }
-
-    _nextSongExists() {
-        return !!this._songs.length;
-    }
-
-    _onData(chunk) {
-        if(chunk) {
-            this._sinks.forEach(sink => sink.write(chunk));
-        }
-    }
-
-    _makeThrottle(bitRate) {
-        return new Throttle(bitRate / 8).on('data', (chunk) => this._onData(chunk));
-    }
-
-    _repeatLoop(song, bitRate) {
-
-        const songReadStream = Fs.createReadStream(song);
-        songReadStream.pipe(this._makeThrottle(parseInt(bitRate)));
-        songReadStream.on('end', () => this._nextSongExists() ? this._playLoop() : this._repeatLoop(song, bitRate));
-    }
-
-    _playLoop() {
-
-        const song = this.removeFromQueue({ fromTop: true });
-        this.streamEvents.emit('play', song);
-        const { format: { bit_rate: bitRate } } = ffprobeSync(Path.join(process.cwd(), song));
-
-        this._repeatLoop(song, bitRate);
-    }
-
-    startStreaming() {
-        this._playLoop();
+        this._sinks = []; // list of active sinks/writables
+        this._songs = []; // list of queued up songs
+        this._currentSong = null;
+        this.stream = new EventEmitter();
     }
 
     init() {
         if (process.env.SPEAKER_OUTPUT === 'true') {
-            this._sinks.push(Queue.makeHostSink());
+            this.makeSpeakerSink();
         }
-        this._songs.unshift(Utils.readSong());
+        this._currentSong = Utils.readSong();
+    }
+
+    makeSpeakerSink() {
+        const speakerSink = new Lame.Decoder();
+        speakerSink.pipe(new Speaker());
+        this._sinks.push(speakerSink);
+        return speakerSink;
+    }
+
+    makeResponseSink() {
+        const responseSink = new PassThrough();
+        this._sinks.push(responseSink);
+        return responseSink;
+    }
+
+    _broadcastToEverySink(chunk) {
+        this._sinks.forEach(sink => {
+            sink.write(chunk);
+        });
+    }
+
+    _getBitRate(song) {
+        try {
+            const bitRate = ffprobeSync(Path.join(process.cwd(), song)).format.bit_rate;
+            return parseInt(bitRate);
+        }
+        catch (err) {
+            return 128000; // reasonable default
+        }
+    }
+
+    _playLoop() {
+
+        this._currentSong = this._songs.length
+            ? this.removeFromQueue({ fromTop: true })
+            : this._currentSong;
+        const bitRate = this._getBitRate(this._currentSong);
+
+        const songReadable = Fs.createReadStream(this._currentSong);
+        
+        const throttleTransformable = new Throttle(bitRate / 8);
+        throttleTransformable.on('data', (chunk) => this._broadcastToEverySink(chunk));
+        throttleTransformable.on('end', () => this._playLoop());
+        
+        this.stream.emit('play', this._currentSong);
+        songReadable.pipe(throttleTransformable);
+    }
+
+    startStreaming() {
+        this._playLoop();
     }
 
     _createBoxChild(content) {
@@ -76,6 +94,30 @@ class Queue extends AbstractClasses.TerminalItemBox {
             top: this.box.children.length - 1,
             content: `${this.box.children.length}. ${content}`
         });
+    }
+
+    _boxChildrenIndexToSongsIndex(index) {
+        // converts index of this.box.children array (view layer)
+        // to the index of this._songs array (stream layer)
+        return index - 1;
+    }
+
+    _createAndAppendToSongs(song) {
+        this._songs.push(song);
+    }
+
+    _createAndAppendToBoxChildren(song) {
+        this.createBoxChildAndAppend(song);
+    }
+
+    createAndAppendToQueue(song) {
+        this._createAndAppendToBoxChildren(song);
+        this._createAndAppendToSongs(song);
+    }
+
+    _removeFromSongs(index) {
+        const adjustedIndex = this._boxChildrenIndexToSongsIndex(index);
+        return this._songs.splice(adjustedIndex, 1);
     }
 
     _discardFromBox(index) {
@@ -92,29 +134,7 @@ class Queue extends AbstractClasses.TerminalItemBox {
         });
     }
 
-    _boxChildrenIndexToSongsArrayIndex(index) {
-        return Math.abs((index - 1) - this._songs.length + 1);
-    }
-
-    _createAndAppendToQueueSongsArray(song) {
-        this._songs.unshift(song);
-    }
-
-    _createAndAppendToQueueBoxChildren(song) {
-        this.createBoxChildAndAppend(song);
-    }
-
-    createAndAppendToQueue(song) {
-        this._createAndAppendToQueueBoxChildren(song);
-        this._createAndAppendToQueueSongsArray(song);
-    }
-
-    _removeFromQueueSongsArray(index) {
-        const adjustedIndex = this._boxChildrenIndexToSongsArrayIndex(index);
-        return this._songs.splice(adjustedIndex, 1);
-    }
-
-    _removeFromQueueBoxChildren(index) {
+    _removeFromBoxChildren(index) {
 
         const child = this.box.children[index];
         const content = child && child.content;
@@ -132,15 +152,15 @@ class Queue extends AbstractClasses.TerminalItemBox {
 
         const index = fromTop ? 1 : this._focusIndexer.get();
 
-        this._removeFromQueueBoxChildren(index);
-        const [song] = this._removeFromQueueSongsArray(index);
+        this._removeFromBoxChildren(index);
+        const [song] = this._removeFromSongs(index);
         return song;
     }
 
-    _changeOrderInQueueSongsArray(boxChildrenIndex1, boxChildrenIndex2) {
+    _changeOrderInSongs(boxChildrenIndex1, boxChildrenIndex2) {
 
-        const songsArrayIndex1 = this._boxChildrenIndexToSongsArrayIndex(boxChildrenIndex1);
-        const songaArrayIndex2 = this._boxChildrenIndexToSongsArrayIndex(boxChildrenIndex2);
+        const songsArrayIndex1 = this._boxChildrenIndexToSongsIndex(boxChildrenIndex1);
+        const songaArrayIndex2 = this._boxChildrenIndexToSongsIndex(boxChildrenIndex2);
         [
             this._songs[songsArrayIndex1], this._songs[songaArrayIndex2]
         ] = [
@@ -148,14 +168,11 @@ class Queue extends AbstractClasses.TerminalItemBox {
         ];
     }
 
-    _changeOrderInQueueBoxChildren(key) {
-
-        if (this.box.children.length === 1) {
-            return;
-        }
+    _changeOrderInBoxChildren(key) {
 
         const index1 = this._focusIndexer.get();
         const child1 = this.box.children[index1];
+        child1.style.bg = this._bgBlur;
 
         if (key === keys.MOVE_UP) {
             this._focusIndexer.decr();
@@ -166,9 +183,8 @@ class Queue extends AbstractClasses.TerminalItemBox {
 
         const index2 = this._focusIndexer.get();
         const child2 = this.box.children[index2];
-
-        child1.style.bg = this._bgBlur;
         child2.style.bg = this._bgFocus;
+
         [
             child1.content,
             child2.content
@@ -181,14 +197,12 @@ class Queue extends AbstractClasses.TerminalItemBox {
     }
 
     changeOrderQueue(key) {
-        const { index1, index2 } = this._changeOrderInQueueBoxChildren(key);
-        this._changeOrderInQueueSongsArray(index1, index2);
-    }
 
-    makeResponseStream() {
-        const sink = new PassThrough();
-        this._sinks.push(sink);
-        return sink;
+        if (this.box.children.length === 1) {
+            return;
+        }
+        const { index1, index2 } = this._changeOrderInBoxChildren(key);
+        this._changeOrderInSongs(index1, index2);
     }
 }
 
