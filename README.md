@@ -6,14 +6,14 @@ This app is a radio streaming solution made entirely in Node.js. It features a t
 Purpose of the whole project was to have fun and experiment. Production ready radio server should use Shoutcast / Icecast (or similar) for a robust streaming server.
 
 ## Requirements
-You must have `ffprobe` installed on your operating system in order for this app to work, since the javascript code relies on that binary to exist. Node v10 is recommended. For now this app will not work with Node v12+, but this will be resolved shortly.
+You must have `ffprobe` installed on your operating system in order for this app to work, since the javascript code relies on that binary to exist. Node v10 is recommended. For now this app will not work with Node versions bigger than v11.x.
 
 ## Installation
-Clone this repository. Go into the root and run: 
+Clone this repository. Go into the root and run:
 ```
 > npm install
 > npm link
-``` 
+```
 These commands will make a `node-radio-mini` command available to be run from anywhere in your terminal.
 
 ## Usage
