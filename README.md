@@ -6,7 +6,7 @@ This app is a radio streaming solution made entirely in Node.js. It features a t
 Purpose of the whole project was to have fun and experiment. Production ready radio server should use Shoutcast / Icecast (or similar) for a robust streaming server.
 
 ## Requirements
-You must have `ffprobe` installed on your operating system in order for this app to work, since the javascript code relies on that binary to exist. Node v10 is recommended. For now this app will not work with Node versions bigger than v11.x.
+You must have `ffprobe` installed, which is part of `ffmpeg`, on your operating system in order for this app to work, since the javascript code relies on that binary to exist.
 
 ## Installation
 Clone this repository. Go into the root and run:
@@ -28,7 +28,7 @@ That command is going to read all mp3 files from the current directory and displ
 There are four windows. 'Playlist' windows contains all the songs from you current directory. 'Queue' windows contains all queued up and ready to play songs. 'Now playing' windows is showing currently streamed song. 'Controls' window is just a helper for seeing available controls at that point of time.
 
 First song is going to get automatically queued up and played. Songs are streamed to the endpoint `http://process.env.HOST:process.env.PORT/stream`, or if you didn't set any env variables the default would be `http://localhost:8080/stream`.
-If you have `process.env.SPEAKER_OUTPUT` env variable set to 'true', songs will be streamed directly to your speakers as well, so you can have an idea what is currently playing.
+
 If you don't have any songs queued up, the last song will be played again.
 
 This app is also serving a single html page that will automatically connect to the streaming endpoint shown above. The page is served at `http://localhost:8080`. You can see how the page appears on the browser in the next screenshot:

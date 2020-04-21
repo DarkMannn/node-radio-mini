@@ -6,8 +6,6 @@ const { PassThrough } = require('stream');
 const Throttle = require('throttle');
 const NeoBlessed = require('neo-blessed');
 const { ffprobeSync } = require('@dropb/ffprobe');
-const Speaker = require('speaker');
-const Lame = require('lame');
 
 const AbstractClasses = require('./shared/abstract-classes');
 const Utils = require('../utils');
@@ -31,16 +29,7 @@ class Queue extends AbstractClasses.TerminalItemBox {
     }
 
     init() {
-        if (process.env.SPEAKER_OUTPUT === 'true') {
-            this.makeSpeakerSink();
-        }
         this._currentSong = Utils.readSong();
-    }
-
-    makeSpeakerSink() {
-        const speakerSink = new Lame.Decoder();
-        speakerSink.pipe(new Speaker());
-        this._sinks.set(Utils.generateRandomId, speakerSink);
     }
 
     makeResponseSink() {
