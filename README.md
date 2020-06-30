@@ -1,7 +1,7 @@
 # Node.js radio mini
 
 ## Description
-This app is a radio streaming solution made entirely in Node.js. It features a terminal GUI (sections for the playlist, the song queue, the currently playing song and for the keyboard controls) and a http endpoint at which the songs are going to get streamed.
+This app is a radio streaming solution made entirely in Node.js. It features a terminal GUI (there are sections for the playlist, the song queue, the currently playing song and for the keyboard controls) and a http endpoint at which the songs are going to get streamed.
 
 Purpose of the whole project was to have fun and experiment. Production ready radio server should use Shoutcast / Icecast (or similar) for a robust streaming server.
 
