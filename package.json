@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@dropb/ffprobe": "^1.4.2",
-    "@hapi/hapi": "^17.x.x",
+    "@hapi/hapi": "^19.x.x",
     "@hapi/inert": "^5.2.2",
     "dotenv": "^8.2.0",
     "neo-blessed": "^0.2.0",
