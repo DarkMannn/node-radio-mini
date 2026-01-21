@@ -20,7 +20,7 @@
     "throttle": "^1.0.3"
   },
   "devDependencies": {
-    "eslint": "^5.10.0"
+    "eslint": "^9.32.0"
   },
   "keywords": [
     "node",
